@@ -1,0 +1,5 @@
+/* Document-level, not component-level: a popup has no natural size and collapses
+   to its content unless the document is given a width. Chrome caps it at 800x600. */
+body {
+  width: var(--bs-popup-width, 320px);
+}

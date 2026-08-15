@@ -1,0 +1,13 @@
+<h1>Blank Slate</h1>
+<p class="u-hint">Side panel — replace this with your UI.</p>
+
+<div class="u-row">
+  @if (settings(); as current) {
+    <span>
+      Enabled:
+      <code>{{ current.enabled }}</code>
+    </span>
+  } @else {
+    <span class="u-hint">Reading settings…</span>
+  }
+</div>

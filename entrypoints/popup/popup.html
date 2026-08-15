@@ -1,0 +1,25 @@
+<h1>Blank Slate</h1>
+<p class="u-hint">Popup — replace this with your UI.</p>
+
+<div class="u-row">
+  <label>
+    <input
+      type="checkbox"
+      [checked]="settings()?.enabled ?? false"
+      [disabled]="settings() === null"
+      (change)="onToggle($event)" />
+    Enabled
+  </label>
+</div>
+
+<div class="u-row">
+  <button type="button" (click)="ping()">Ping background</button>
+  @if (pong(); as at) {
+    <code>{{ at }}</code>
+  }
+</div>
+
+<div class="u-row">
+  <button type="button" (click)="openSidePanel()">Side panel</button>
+  <button type="button" (click)="openOptions()">Options</button>
+</div>

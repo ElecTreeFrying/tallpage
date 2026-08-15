@@ -1,0 +1,19 @@
+# Normalise line endings so a checkout on another machine cannot produce a diff
+# that is nothing but CRLF. Extension source ships to a browser; the store never
+# sees this file, but a whitespace-only diff hides a real one.
+* text=auto eol=lf
+
+# Binary — never diffed, never line-ending converted.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.zip binary
+*.crx binary
+
+# Generated. Collapsed in diffs and excluded from language stats, but still
+# reviewed on purpose when a dependency moves.
+package-lock.json linguist-generated=true -diff

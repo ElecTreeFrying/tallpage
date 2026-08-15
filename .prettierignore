@@ -1,0 +1,15 @@
+# Add files here to ignore them from prettier formatting
+/.output
+/.wxt
+/node_modules
+/stats.html
+
+# TypeScript is hand-formatted per .claude/coding-standards/preferences.md §P2 —
+# never prettier-managed. Removing these two lines silently rewrites every padded
+# class body and padded array in the project.
+**/*.ts
+**/*.mts
+
+# The extension documents themselves. WXT reads these to generate the manifest,
+# and the `<script src>` / custom-element markup in them is contract, not style.
+/entrypoints/**/index.html

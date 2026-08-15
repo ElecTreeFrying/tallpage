@@ -1,0 +1,16 @@
+{
+  'singleQuote': true,
+  'embeddedLanguageFormatting': 'off',
+  'overrides':
+    [
+      {
+        'files': '*.html',
+        'options':
+          {
+            'parser': 'angular',
+            'bracketSameLine': true,
+            'htmlWhitespaceSensitivity': 'ignore',
+          },
+      },
+    ],
+}

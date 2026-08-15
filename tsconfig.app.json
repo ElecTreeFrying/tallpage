@@ -1,0 +1,19 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    // WXT's generated base sets `noEmit: true`, which is right for the type
+    // gate (`npm run compile`) and fatal here: the Angular compiler builds its
+    // program from THIS file, and with no emitter the surfaces compile to
+    // nothing at all. The build still succeeds — the HTML pages just ship
+    // empty. Never inherit it.
+    "noEmit": false
+  },
+  "include": [
+    "entrypoints/popup/**/*.ts",
+    "entrypoints/options/**/*.ts",
+    "entrypoints/sidepanel/**/*.ts",
+    "storage.ts",
+    "storage-signal.ts",
+    "messaging.ts"
+  ]
+}

@@ -1,0 +1,116 @@
+/* Global document stylesheet, loaded by every HTML surface.
+
+   Classes here are reachable from outside a component, so they carry a role
+   prefix (§C1). Component-local layout stays in that component's own stylesheet
+   where plain names are fine. */
+
+:root {
+  --bs-bg: #ffffff;
+  --bs-text: #1a1a1a;
+  --bs-text-soft: #5c626b;
+  --bs-border: #d8dbe0;
+  --bs-accent: #1d4ed8;
+  --bs-surface-pad: 16px;
+
+  color-scheme: light dark;
+  font-family:
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bs-bg: #18181b;
+    --bs-text: #f4f4f5;
+    --bs-text-soft: #a9aeb6;
+    --bs-border: #3f3f46;
+    --bs-accent: #93b4fd;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bs-bg, #ffffff);
+  color: var(--bs-text, #1a1a1a);
+}
+
+h1 {
+  margin: 0 0 4px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+p {
+  margin: 0 0 16px;
+}
+
+/* Role: utility. A single row of controls separated by a hairline rule. */
+.u-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  border-block-start: 1px solid var(--bs-border, #d8dbe0);
+}
+
+/* Role: utility. Secondary explanatory text. */
+.u-hint {
+  color: var(--bs-text-soft, #5c626b);
+  font-size: 12px;
+}
+
+button {
+  padding: 6px 12px;
+  border: 1px solid var(--bs-border, #d8dbe0);
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+button:hover {
+  border-color: var(--bs-accent, #1d4ed8);
+  color: var(--bs-accent, #1d4ed8);
+}
+
+/* §C5 — focus is always visible; never remove an outline without replacing it. */
+:focus-visible {
+  outline: 2px solid var(--bs-accent, #1d4ed8);
+  outline-offset: 2px;
+}
+
+code {
+  padding: 1px 4px;
+  border-radius: 4px;
+  background: var(--bs-border, #d8dbe0);
+  font-size: 12px;
+}
+
+/* §C5 — honoured by every transition and animation added later. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* §C5 — Windows High Contrast keeps a usable border on interactive chrome. */
+@media (forced-colors: active) {
+  button {
+    border-color: ButtonBorder;
+  }
+}
