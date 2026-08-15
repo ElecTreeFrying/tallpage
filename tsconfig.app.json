@@ -12,6 +12,7 @@
     "entrypoints/popup/**/*.ts",
     "entrypoints/options/**/*.ts",
     "entrypoints/sidepanel/**/*.ts",
+    "entrypoints/viewer/**/*.ts",
     "storage.ts",
     "storage-signal.ts",
     "messaging.ts"

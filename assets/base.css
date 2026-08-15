@@ -4,13 +4,37 @@
    prefix (§C1). Component-local layout stays in that component's own stylesheet
    where plain names are fine. */
 
+/* Every ratio below is measured against this theme's own `--tp-bg`, not
+   guessed, and both themes are stated because §C5 requires both to be tested.
+   A token pair is fixed the moment it gets a value — retrofitting contrast
+   after components read these is a re-theme, not a fix.
+
+   ONE THING TO KNOW BEFORE CHANGING `--tp-accent`. The brand lime `#C9F24D`
+   is used literally in dark mode, where it measures 13.77:1. In light mode the
+   same colour is **1.20:1** — not "low contrast", invisible — and its sibling
+   `#9BC22C` is 1.93:1, no better. A bright yellow-green simply cannot carry
+   text on an off-white ground.
+
+   So light mode uses `#4D6B10`: the same hue, darkened until it clears AA at
+   5.70:1. The brand colours remain the identity; these tokens are the usable
+   derivatives of them. Putting `#C9F24D` back into the light theme because it
+   "matches the logo" is the mistake this note exists to prevent. */
 :root {
-  --bs-bg: #ffffff;
-  --bs-text: #1a1a1a;
-  --bs-text-soft: #5c626b;
-  --bs-border: #d8dbe0;
-  --bs-accent: #1d4ed8;
-  --bs-surface-pad: 16px;
+  --tp-bg: #f7f7f2; /* brand off-white                                     */
+  --tp-text: #101828; /* 16.51:1 — the brand ink                          */
+  --tp-text-soft: #525a68; /* 6.47:1                                       */
+  --tp-border: #e4e4dd; /* hairlines only; decorative, not a UI boundary   */
+  --tp-border-strong: #767e8c; /* 3.81:1 — interactive boundaries (1.4.11) */
+  --tp-accent: #4d6b10; /* 5.70:1 — see the note below                     */
+  --tp-accent-soft: #eef7d8; /* accent on it: 5.53:1                       */
+  --tp-surface-pad: 16px;
+
+  /* Motion, through the same seam as colour so every surface moves alike.
+     One easing — decelerating, no overshoot — and two durations: `quick` for
+     something responding to a pointer, `settle` for something arriving. */
+  --tp-ease: cubic-bezier(0.2, 0, 0, 1);
+  --tp-quick: 120ms;
+  --tp-settle: 260ms;
 
   color-scheme: light dark;
   font-family:
@@ -24,11 +48,13 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bs-bg: #18181b;
-    --bs-text: #f4f4f5;
-    --bs-text-soft: #a9aeb6;
-    --bs-border: #3f3f46;
-    --bs-accent: #93b4fd;
+    --tp-bg: #101828; /* the brand ink, as ground                   */
+    --tp-text: #f7f7f2; /* 16.51:1                                  */
+    --tp-text-soft: #98a2b3; /* 6.89:1                              */
+    --tp-border: #232c3e; /* hairlines only                         */
+    --tp-border-strong: #646c7c; /* 3.36:1                          */
+    --tp-accent: #c9f24d; /* 13.77:1 — the logo lime, unmodified    */
+    --tp-accent-soft: #1b2416; /* accent on it: 12.43:1             */
   }
 }
 
@@ -40,8 +66,8 @@
 
 body {
   margin: 0;
-  background: var(--bs-bg, #ffffff);
-  color: var(--bs-text, #1a1a1a);
+  background: var(--tp-bg, #f7f7f2);
+  color: var(--tp-text, #101828);
 }
 
 h1 {
@@ -60,44 +86,97 @@ p {
   align-items: center;
   gap: 8px;
   padding: 8px 0;
-  border-block-start: 1px solid var(--bs-border, #d8dbe0);
+  border-block-start: 1px solid var(--tp-border, #e4e4dd);
 }
 
 /* Role: utility. Secondary explanatory text. */
 .u-hint {
-  color: var(--bs-text-soft, #5c626b);
+  color: var(--tp-text-soft, #525a68);
   font-size: 12px;
 }
 
+/* The border reads `--tp-border-strong`, not `--tp-border`. A button's edge is
+   the visual boundary of a UI component, which WCAG 1.4.11 holds to 3:1 — the
+   hairline token is 1.19:1 and is for rules between rows, where nothing is
+   being outlined. */
 button {
   padding: 6px 12px;
-  border: 1px solid var(--bs-border, #d8dbe0);
+  border: 1px solid var(--tp-border-strong, #767e8c);
   border-radius: 6px;
   background: transparent;
   color: inherit;
   font: inherit;
   cursor: pointer;
+  transition:
+    border-color var(--tp-quick, 120ms) var(--tp-ease, ease),
+    background var(--tp-quick, 120ms) var(--tp-ease, ease),
+    color var(--tp-quick, 120ms) var(--tp-ease, ease),
+    transform var(--tp-quick, 120ms) var(--tp-ease, ease);
+}
+
+/* Pressed state. One pixel is enough to read as a press and small enough not
+   to shift the label's baseline perceptibly. */
+button:active:not(:disabled) {
+  transform: translateY(1px);
 }
 
 button:hover {
-  border-color: var(--bs-accent, #1d4ed8);
-  color: var(--bs-accent, #1d4ed8);
+  border-color: var(--tp-accent, #4d6b10);
+  background: var(--tp-accent-soft, #eef7d8);
+  color: var(--tp-accent, #4d6b10);
+}
+
+button:disabled {
+  border-color: var(--tp-border, #e4e4dd);
+  background: transparent;
+  color: var(--tp-text-soft, #525a68);
+  cursor: not-allowed;
 }
 
 /* §C5 — focus is always visible; never remove an outline without replacing it. */
 :focus-visible {
-  outline: 2px solid var(--bs-accent, #1d4ed8);
+  outline: 2px solid var(--tp-accent, #4d6b10);
   outline-offset: 2px;
 }
 
 code {
   padding: 1px 4px;
   border-radius: 4px;
-  background: var(--bs-border, #d8dbe0);
+  background: var(--tp-accent-soft, #eef7d8);
   font-size: 12px;
 }
 
-/* §C5 — honoured by every transition and animation added later. */
+/* The shared motion vocabulary. Named `tp-*` because keyframes are global
+   whatever stylesheet declares them — there is no scoping to hide behind.
+
+   Each one omits its `to` frame on purpose: the end state is whatever the
+   element already is, so a keyframe never has to restate a colour or a
+   position and never drifts from the rule that sets it. */
+@keyframes tp-rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+@keyframes tp-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+/* An indeterminate sweep — the work has no measurable progress to report, so
+   the bar says "running" rather than pretending to know how far along it is. */
+@keyframes tp-sweep {
+  from {
+    transform: translateX(-110%);
+  }
+  to {
+    transform: translateX(400%);
+  }
+}
+
+/* §C5 — honoured by every transition and animation. */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -105,6 +184,14 @@ code {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+
+    /* Delays are zeroed too, and that is not tidiness. A staggered entrance
+       holds each item at `opacity: 0` until its delay elapses; shortening the
+       duration alone leaves the delay intact, so a reduced-motion user waits
+       out the full stagger staring at blank space. Cutting the duration
+       without the delay is worse than not animating at all. */
+    animation-delay: 0s !important;
+    transition-delay: 0s !important;
   }
 }
 

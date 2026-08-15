@@ -18,14 +18,26 @@ import { storage } from '#imports';
  * | `managed:` | read-only, set by enterprise policy          |
  */
 
+/**
+ * What a capture is written out as.
+ *
+ * PNG and PDF are the same pixels — PDF wraps the raster. HTML is a different
+ * artefact entirely: the live DOM saved as one self-contained document, with
+ * text that is still text.
+ */
+export type ExportFormat = 'png' | 'pdf' | 'html' | 'md';
+
 export interface Settings {
 
   enabled: boolean;
 
+  format: ExportFormat;
+
 }
 
 export const DEFAULT_SETTINGS: Settings = {
-  enabled: true
+  enabled: true,
+  format: 'png'
 };
 
 /**
@@ -35,12 +47,49 @@ export const DEFAULT_SETTINGS: Settings = {
  */
 export const settings = storage.defineItem<Settings>('local:settings', {
   fallback: DEFAULT_SETTINGS,
-  version: 1,
+  version: 2,
   migrations: {
+    2: (previous: Partial<Settings>): Settings => ({ ...DEFAULT_SETTINGS, ...previous })
   }
 });
 
 /** Ephemeral by design — the right home for anything that must not outlive the browser session. */
 export const lastRunAt = storage.defineItem<number | null>('session:last-run-at', {
   fallback: null
+});
+
+export interface CaptureProgress {
+
+  running: boolean;
+
+  /** 0–1. Meaningless while `running` is false. */
+  fraction: number;
+
+}
+
+/**
+ * How far the current capture has got.
+ *
+ * Session-scoped rather than local because a half-finished run is worthless
+ * after a browser restart. It lives in storage at all — rather than a variable
+ * in the worker — because the worker is torn down when idle and a UI opened
+ * mid-run has nowhere else to read from (§E1).
+ */
+export const captureProgress = storage.defineItem<CaptureProgress>('session:capture-progress', {
+  fallback: { running: false, fraction: 0 }
+});
+
+/**
+ * The most recent Markdown export, for `entrypoints/viewer/` to render.
+ *
+ * The viewer reads this rather than the `.md` that was just downloaded, so it
+ * does not depend on "Allow access to file URLs" — a setting only the user can
+ * grant, whose absence would otherwise show an empty page.
+ *
+ * Session-scoped for two reasons: a rendered export is worthless after a
+ * browser restart, and `local:` would keep the full text of the last page read
+ * on disk indefinitely.
+ */
+export const lastMarkdown = storage.defineItem<string>('session:last-markdown', {
+  fallback: ''
 });

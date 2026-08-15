@@ -13,7 +13,7 @@ import { imports, viewProviders } from './config';
  * popup has no Firefox equivalent.
  */
 @Component({
-  selector: 'bs-sidepanel',
+  selector: 'tp-sidepanel',
   templateUrl: './sidepanel.html',
   styleUrl: './sidepanel.css',
   host: { class: 'c-sidepanel' },

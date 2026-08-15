@@ -12,7 +12,7 @@ import { imports, viewProviders } from './config';
  * other without a reload — the property worth preserving as surfaces are added.
  */
 @Component({
-  selector: 'bs-options',
+  selector: 'tp-options',
   templateUrl: './options.html',
   styleUrl: './options.css',
   host: { class: 'c-options' },

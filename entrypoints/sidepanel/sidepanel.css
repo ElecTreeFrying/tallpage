@@ -1,4 +1,4 @@
 :host {
   display: block;
-  padding: var(--bs-surface-pad, 16px);
+  padding: var(--tp-surface-pad, 16px);
 }

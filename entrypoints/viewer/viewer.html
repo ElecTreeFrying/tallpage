@@ -1,0 +1,9 @@
+@if (pending()) {
+  <p class="u-hint">Loading…</p>
+} @else if (rendered(); as html) {
+  <article class="doc" [innerHTML]="html"></article>
+} @else {
+  <p class="u-hint">
+    Nothing to show yet — run a Markdown export from the toolbar.
+  </p>
+}

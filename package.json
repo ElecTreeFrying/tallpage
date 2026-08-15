@@ -1,6 +1,6 @@
 {
-  "name": "blank-slate",
-  "description": "Blank-slate Chrome extension. Rename me.",
+  "name": "tallpage",
+  "description": "Download any web page, top to bottom, as a PNG or PDF.",
   "private": true,
   "version": "0.0.0",
   "type": "module",

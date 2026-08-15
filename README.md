@@ -1,10 +1,12 @@
-# blank-slate
+# Tallpage
 
-A Manifest V3 browser extension on **WXT + Angular**, with all five surfaces stubbed and no
-product yet. Rename it when it becomes one.
+Downloads the page you are on — **top to bottom, the whole document** — as a PNG or a PDF.
+A Manifest V3 browser extension on **WXT + Angular**, with no third-party runtime code in
+the capture path.
 
-Agent-facing rules live in [`CLAUDE.md`](CLAUDE.md) and
-[`.claude/`](.claude/CLAUDE.md) — this file is the human quickstart.
+Agent-facing rules live in [`CLAUDE.md`](CLAUDE.md) and [`.claude/`](.claude/CLAUDE.md);
+what the product is and is not is [`.claude/spec/product.md`](.claude/spec/product.md).
+This file is the human quickstart.
 
 ## Run it
 
@@ -29,46 +31,108 @@ npm run build      # production build
 Both pass, and the change is done. There are no unit tests yet — that is deliberate, and an
 agent never adds one (see §P4).
 
+## How the capture works
+
+Chrome has no full-page capture API outside the DevTools Protocol, so this uses it:
+
+```
+popup click
+     ↓
+background   →  debugger.attach
+     ↓
+             →  Page.getLayoutMetrics             document size in CSS pixels
+     ↓
+             →  Emulation.setDeviceMetricsOverride  viewport := the whole document
+     ↓                                              wait, then re-measure
+             →  Page.captureScreenshot            one render, no tiling
+     ↓
+             →  Emulation.clearDeviceMetricsOverride
+
+HTML takes the other branch — no resize, no paint:
+             →  Runtime.evaluate                  serialize the live DOM,
+                                                  inline every asset as data:
+PNG  the protocol's bytes, untouched
+PDF  decode → strip alpha → CompressionStream → pdf.ts
+     ↓
+             →  data: URL → chrome.downloads → debugger.detach
+```
+
+**Nothing runs inside the page.** No scrolling, no injected CSS, no stitching. That is the
+entire argument for this engine, and it is why the output does not depend on how the page
+behaves.
+
+**Scroll-and-stitch on `tabs.captureVisibleTab` was tried and abandoned.** It sees only the
+viewport, so a full page has to be assembled by hand — and every page behaviour becomes a
+guess: `sticky` demotes to `static` while `fixed` demotes to `absolute`, scroll-triggered
+reveals must be allowed to finish or they photograph at `opacity: 0`, lazy images need a
+priming pass, and chrome injected _after_ the preparation pass repeats once per frame.
+Each fails on a different site. It was also capped at **2 captures per second**.
+
+## Permissions
+
+```
+debugger  activeTab  downloads  storage  sidePanel        host_permissions: []
+```
+
+**`debugger` is the expensive one and it is deliberate.** It cannot be made optional, it warns
+_"Read and change all your data on all websites"_ at install, Chrome shows an undismissable
+banner while attached, and it guarantees manual store review. That is the price of an engine
+that is correct on every page rather than most of them.
+
+Everything else stays minimal. `activeTab` is there only so the tab's title can name the file.
+
 ## What's here
 
-| Surface         | Lives                             | For                                    |
-| --------------- | --------------------------------- | -------------------------------------- |
-| `background.ts` | woken per event, killed when idle | anything that must survive a closed UI |
-| `popup/`        | destroyed on blur                 | reading state, dispatching intent      |
-| `sidepanel/`    | survives navigation               | anything stateful or long-running      |
-| `options/`      | an ordinary page                  | settings                               |
-| `content.ts`    | the page's lifetime               | reading or changing the page DOM       |
+| Surface         | Lives                             | For                                     |
+| --------------- | --------------------------------- | --------------------------------------- |
+| `background.ts` | woken per event, killed when idle | the capture run — it outlives the popup |
+| `popup/`        | destroyed on blur                 | the two download buttons                |
+| `sidepanel/`    | survives navigation               | progress and preview                    |
+| `options/`      | an ordinary page                  | settings                                |
 
-Three root modules are shared by all of them: `storage.ts` (persisted state), `messaging.ts`
-(the typed cross-surface protocol) and `storage-signal.ts` (binds a storage item to an
-Angular signal).
+Eight root modules are shared across them: `storage.ts` (persisted state), `messaging.ts` (the
+typed cross-surface protocol), `storage-signal.ts` (binds a storage item to an Angular signal),
+`debugger-session.ts` (one attached CDP session, always released), `capture.ts` (the screenshot
+pipeline), `archive.ts` (the page as one self-contained HTML file), `markdown.ts` (the page's
+readable content as Markdown) and `pdf.ts` (a single-page PDF around one raster, with no
+dependencies).
+
+## The four exports
+
+**PNG** — Chrome's own bytes, untouched. **PDF** — the same pixels in a hand-written PDF
+wrapper; raster, so its text is not selectable. **HTML** — a different artefact entirely: the
+live DOM saved as one self-contained file with stylesheets, images and CSS assets inlined as
+`data:` URIs, so it opens with no network. Text stays text and links stay links.
+
+The HTML archive is serialized from the **current DOM**, not the original response — which is
+the point on anything client-rendered, where the served HTML is a shell. Scripts are stripped:
+an archive that re-runs its own JavaScript re-fetches and usually destroys the state that was
+worth saving.
+
+**Markdown** — the page's readable content. Headings, emphasis, links, images, lists, quotes,
+code and tables survive; navigation, chrome and styling are dropped. Lossy on purpose.
+
+**The saved file opens in a new tab automatically.** Markdown opens in the extension's own
+`viewer.html`, because Chrome renders a `.md` file as plain text — the viewer reads the export
+from session storage, so it works regardless of file access. Every other format opens the
+downloaded file directly, which needs _"Allow access to file URLs"_ on the extension (only you
+can grant that, from `chrome://extensions`). Without it the file is still saved; only the tab
+is skipped.
 
 **The service worker is ephemeral.** Chrome kills it after ~30s idle, so no module-level
 variable survives and no long `setTimeout` fires. State goes through `storage.ts`; timers go
-through `browser.alarms`.
+through `browser.alarms`. It has no DOM either — which is why the PDF path decodes through
+`createImageBitmap` and `OffscreenCanvas` rather than an `<img>`, and why the download goes
+out as a `data:` URL (`URL.createObjectURL` does not exist there).
 
 **Angular compiles three directories only** — the popup, options and side panel. The
-background and content scripts stay plain TypeScript, enforced by `transformFilter` in
-`wxt.config.ts`. A content script is injected into every matched page and must not carry a
-framework runtime.
-
-## Stack
-
-|           |                                                           |
-| --------- | --------------------------------------------------------- |
-| Framework | WXT 0.21 (Vite 8)                                         |
-| UI        | Angular 22, zoneless, via `@analogjs/vite-plugin-angular` |
-| Language  | TypeScript 6.0 (pinned by Angular)                        |
-
-Angular is not an officially supported WXT framework — the reasoning, the version
-constraints and what would reverse the choice are in
-[`.claude/decisions/0001`](.claude/decisions/0001-angular-through-a-vite-plugin.md).
+background script stays plain TypeScript, enforced by `transformFilter` in `wxt.config.ts`.
 
 ## Before shipping
 
-- Replace the placeholder icons in `public/icon/`.
-- Narrow `content.ts`'s `matches` and the `host_permissions` list — `<all_urls>` is a slow
-  store review.
-- Request permissions only as features need them. Chrome Web Store policy since 2026-08-01
-  requires everything requested to be strictly necessary for the stated purpose, disclosed
-  upfront.
+- Replace the placeholder icons in `public/icon/` — still WXT's scaffold defaults.
+- Keep `host_permissions` empty. `debugger` is the only broad permission and it is enough.
+- Chrome Web Store policy since 2026-08-01 requires everything requested to be strictly
+  necessary and disclosed upfront. This extension makes no network calls and collects
+  nothing, which is what keeps that disclosure empty — and `debugger` will need a written
+  justification at review regardless, since it triggers manual review every submission.

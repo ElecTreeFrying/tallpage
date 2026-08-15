@@ -1,4 +1,113 @@
 :host {
   display: block;
-  padding: var(--bs-surface-pad, 16px);
+  padding: var(--tp-surface-pad, 16px);
+}
+
+/* The heading leads and everything else follows it in. These bare element
+   selectors are safe because this component keeps Angular's encapsulation —
+   they are rewritten to reach nothing outside the popup. */
+h1 {
+  animation: tp-rise var(--tp-settle, 260ms) var(--tp-ease, ease) both;
+}
+
+/* `:not(.status)` because the status line also carries `.u-hint` and has its
+   own, faster entrance. Excluding it here beats relying on source order —
+   both are single-class selectors, so the winner would otherwise be whichever
+   rule happens to sit lower in the file. */
+.u-hint:not(.status) {
+  animation: tp-rise var(--tp-settle, 260ms) var(--tp-ease, ease) both;
+  animation-delay: 40ms;
+}
+
+/* The four exports are the surface's whole purpose, so they stack full-width
+   rather than sharing a row — the labels do not fit side by side at the popup's
+   fixed 320px and truncating any one of them loses the format. */
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-block: 12px;
+  border-block-start: 1px solid var(--tp-border, #e4e4dd);
+}
+
+.actions button {
+  inline-size: 100%;
+  animation: tp-rise var(--tp-settle, 260ms) var(--tp-ease, ease) both;
+}
+
+/* A stagger, not a cascade — 40ms apart, so the four read as one gesture
+   arriving rather than a list being dealt out. The popup is open for a second
+   or two; anything longer is animation the user has to wait through. */
+.actions button:nth-child(1) {
+  animation-delay: 30ms;
+}
+
+.actions button:nth-child(2) {
+  animation-delay: 70ms;
+}
+
+.actions button:nth-child(3) {
+  animation-delay: 110ms;
+}
+
+.actions button:nth-child(4) {
+  animation-delay: 150ms;
+}
+
+/* `role="status"` announces progress without stealing focus; the margin
+   override keeps it tight to the buttons it describes. */
+.status {
+  margin-block: 0 12px;
+  animation: tp-rise var(--tp-quick, 120ms) var(--tp-ease, ease) both;
+}
+
+/* Indeterminate: a capture reports no measurable progress, so the bar says
+   "running" instead of inventing a percentage. `aria-hidden` in the template
+   keeps it out of the accessibility tree — the `role="status"` line above
+   already announces the same thing in words. */
+.bar {
+  block-size: 3px;
+  margin-block: 0 12px;
+  border-radius: 999px;
+  background: var(--tp-border, #e4e4dd);
+  overflow: hidden;
+  animation: tp-fade var(--tp-quick, 120ms) var(--tp-ease, ease) both;
+}
+
+.bar span {
+  display: block;
+  inline-size: 30%;
+  block-size: 100%;
+  border-radius: inherit;
+  background: var(--tp-accent, #4d6b10);
+  animation: tp-sweep 1.1s var(--tp-ease, ease) infinite;
+}
+
+/* Right-aligned, because a small control left-aligned under four full-width
+   ones has nothing to line up with and reads as dropped rather than placed.
+   The global `.u-row` is a row of peers; this is one secondary action after a
+   block of primary ones, which is a different shape. */
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  padding-block-start: 10px;
+  border-block-start: 1px solid var(--tp-border, #e4e4dd);
+  animation: tp-fade var(--tp-settle, 260ms) var(--tp-ease, ease) both;
+  animation-delay: 190ms;
+}
+
+/* A text button: the label is the affordance, so it carries the contrast
+   (--tp-text-soft is 6.47:1 light / 6.89:1 dark) and no border competes with
+   the four outlined buttons above it. */
+.quiet {
+  padding: 4px 8px;
+  border-color: transparent;
+  color: var(--tp-text-soft, #525a68);
+  font-size: 12px;
+}
+
+.quiet:hover {
+  border-color: transparent;
+  background: var(--tp-accent-soft, #eef7d8);
+  color: var(--tp-accent, #4d6b10);
 }

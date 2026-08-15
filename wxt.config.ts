@@ -18,22 +18,38 @@ import angular from '@analogjs/vite-plugin-angular';
 const ANGULAR_DIRS = [
   '/entrypoints/popup/',
   '/entrypoints/options/',
-  '/entrypoints/sidepanel/'
+  '/entrypoints/sidepanel/',
+  '/entrypoints/viewer/'
 ];
 
 // See https://wxt.dev/api/config.html
 export default defineConfig({
   manifest: {
-    name: 'Blank Slate',
-    description: 'Blank-slate Chrome extension. Rename me.',
+    name: 'Tallpage',
+    description: 'Download any web page, top to bottom, as a PNG or PDF.',
 
     // Keep this minimal. Chrome Web Store policy, enforced since 2026-08-01,
     // requires everything requested to be strictly necessary for the stated
     // purpose — add a permission when a feature needs it, never upfront.
-    permissions: [ 'storage' ],
+    //
+    // `debugger` is the expensive one and it is deliberate. Full-page capture
+    // has no other correct implementation: `tabs.captureVisibleTab` sees only
+    // the viewport, so the alternative is scrolling and stitching frames by
+    // hand, which guesses at sticky positioning, scroll-triggered reveals, lazy
+    // images and late-injected chrome — and gets one of them wrong on most
+    // real sites. `Page.captureScreenshot` with `captureBeyondViewport` asks
+    // Chrome's renderer for the whole document instead, and guesses at nothing.
+    //
+    // Know what it costs before touching it: `debugger` CANNOT be an optional
+    // permission, it warns "Read and change all your data on all websites" at
+    // install, it shows an undismissable banner while attached, and it
+    // guarantees manual store review.
+    //
+    // `activeTab` stays because the toolbar click is what exposes the tab's
+    // title, which names the downloaded file.
+    permissions: [ 'storage', 'activeTab', 'downloads', 'debugger' ],
 
-    // Hosts the content script may touch. Narrow this to real hosts before
-    // shipping; `<all_urls>` triggers a markedly slower store review.
+    // Still empty, and it stays that way — nothing here needs a host pattern.
     host_permissions: []
   },
 

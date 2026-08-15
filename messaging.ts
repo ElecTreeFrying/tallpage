@@ -1,5 +1,6 @@
 import { browser } from '#imports';
 import type { Browser } from 'wxt/browser';
+import type { ExportFormat } from '@/storage';
 
 /**
  * The typed protocol between extension surfaces.
@@ -10,11 +11,36 @@ import type { Browser } from 'wxt/browser';
  * `MessageReplies`, and both ends are forced to agree.
  */
 
-export type Message = { type: 'ping' };
+export type Message =
+  | { type: 'ping' }
+  | { type: 'capture'; format: ExportFormat };
 
 export interface MessageReplies {
 
   ping: { pong: true; at: number };
+
+  capture: CaptureReply;
+
+}
+
+/**
+ * The popup fires this and closes, so nothing is waiting for the reply on a
+ * successful run — the toolbar badge and the download are the real feedback.
+ * It is still typed and still returned, because a failure that resolves before
+ * the popup dies is the one the user can actually be told about.
+ */
+export interface CaptureReply {
+
+  ok: boolean;
+
+  /** Present when `ok` is false. */
+  error?: string;
+
+  /** CSS pixels captured. Short of `requested` when the canvas cap bit. */
+  captured?: number;
+
+  /** CSS pixels the page reported. */
+  requested?: number;
 
 }
 

@@ -1,6 +1,6 @@
 :host {
   display: block;
-  max-inline-size: var(--bs-options-measure, 40rem);
+  max-inline-size: var(--tp-options-measure, 40rem);
   margin-inline: auto;
-  padding: var(--bs-surface-pad, 16px);
+  padding: var(--tp-surface-pad, 16px);
 }

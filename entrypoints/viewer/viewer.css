@@ -1,0 +1,128 @@
+/* The host class, not `:host`. With encapsulation off (see `viewer.ts`) `:host`
+   is never rewritten and matches nothing — `.c-viewer` is the stable hook §C1
+   puts on every component for exactly this case. */
+.c-viewer {
+  display: block;
+  padding: 48px 24px 96px;
+}
+
+/* A reading measure, centred. Prose past roughly 70 characters a line costs the
+   reader the start of the next one, which is the whole failure mode of a
+   full-width Markdown dump. */
+.doc {
+  margin-inline: auto;
+  max-inline-size: 68ch;
+  animation: tp-rise var(--tp-settle, 260ms) var(--tp-ease, ease) both;
+}
+
+/* Images decode after the document paints, so they pop in. Fading each one as
+   it lands turns that into something intentional rather than a flicker. */
+.doc img {
+  animation: tp-fade 400ms var(--tp-ease, ease) both;
+}
+
+/* Everything below styles rendered output, so it cannot be scoped by a class on
+   the element — `render.ts` emits bare tags. The `.doc` prefix keeps it from
+   leaking past this component. */
+.doc h1,
+.doc h2,
+.doc h3,
+.doc h4,
+.doc h5,
+.doc h6 {
+  margin-block: 1.6em 0.5em;
+  font-weight: 600;
+  line-height: 1.25;
+  text-wrap: balance;
+}
+
+.doc h1 {
+  font-size: 2em;
+}
+
+.doc h2 {
+  font-size: 1.5em;
+  padding-block-end: 0.25em;
+  border-block-end: 1px solid var(--tp-border, #e4e4dd);
+}
+
+.doc h3 {
+  font-size: 1.2em;
+}
+
+.doc p,
+.doc ul,
+.doc ol,
+.doc blockquote,
+.doc pre,
+.doc table {
+  margin-block: 0 1em;
+}
+
+.doc :is(ul, ol) {
+  padding-inline-start: 1.5em;
+}
+
+.doc li {
+  margin-block: 0.25em;
+}
+
+.doc a {
+  color: var(--tp-accent, #4d6b10);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+.doc img {
+  max-inline-size: 100%;
+  block-size: auto;
+  border-radius: 6px;
+}
+
+/* The bar is the only thing marking this as a quotation, so it reads the 3:1
+   token rather than the hairline — a rule you cannot see is not a rule. */
+.doc blockquote {
+  padding-inline-start: 1em;
+  border-inline-start: 3px solid var(--tp-border-strong, #767e8c);
+  color: var(--tp-text-soft, #525a68);
+}
+
+.doc pre {
+  padding: 12px 14px;
+  border: 1px solid var(--tp-border, #e4e4dd);
+  border-radius: 8px;
+  overflow-x: auto;
+}
+
+.doc pre code {
+  padding: 0;
+  background: none;
+  font-size: 13px;
+}
+
+.doc hr {
+  margin-block: 2em;
+  border: 0;
+  border-block-start: 1px solid var(--tp-border, #e4e4dd);
+}
+
+/* A wide table scrolls inside its own box rather than pushing the page sideways. */
+.doc table {
+  display: block;
+  inline-size: 100%;
+  overflow-x: auto;
+  border-collapse: collapse;
+}
+
+/* Gridlines are what make a table readable as a grid — they carry structure,
+   not decoration, so 1.4.11's 3:1 applies and the hairline token does not. */
+.doc :is(th, td) {
+  padding: 6px 10px;
+  border: 1px solid var(--tp-border-strong, #767e8c);
+  text-align: start;
+  vertical-align: top;
+}
+
+.doc th {
+  font-weight: 600;
+}
