@@ -14,8 +14,14 @@ stats-*.json
 .wxt
 web-ext.config.ts
 
-# Local, never shared configuration
-.claude/settings.local.json
+# Agent tooling — kept on disk, never published.
+# `CLAUDE.md` carries no leading slash on purpose: it matches at every depth, so
+# a new directory's doc is ignored the moment it is written rather than the next
+# time someone remembers to add it.
+.agents/
+.claude/
+.mcp.json
+CLAUDE.md
 
 # Editor directories and files
 .vscode/*
