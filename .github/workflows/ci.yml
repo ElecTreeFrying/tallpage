@@ -1,0 +1,110 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+# Least privilege by default. No job writes to the repository.
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Verify (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    strategy:
+      fail-fast: false
+      matrix:
+        # Node 24 matches .nvmrc (lts/krypton); 22 is the compatibility check.
+        node: [22, 24]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check formatting
+        run: npm run format:check
+
+      - name: Compile
+        run: npm run compile
+
+      - name: Test
+        run: npm test
+
+      - name: Build Chrome MV3 extension
+        run: npm run build
+
+      - name: Assert the production surfaces exist
+        run: |
+          test -f .output/chrome-mv3/manifest.json
+          test -f .output/chrome-mv3/background.js
+          test -f .output/chrome-mv3/popup.html
+          test -f .output/chrome-mv3/sidepanel.html
+          test -f .output/chrome-mv3/options.html
+          test -f .output/chrome-mv3/viewer.html
+          test -f .output/chrome-mv3/icon/128.png
+
+  package:
+    name: Chrome Web Store package
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: verify
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Chrome Web Store ZIP
+        run: npm run zip
+
+      - name: Assert ZIP contents
+        run: |
+          archive="$(find .output -maxdepth 1 -name 'tallpage-*-chrome.zip' -print -quit)"
+          test -n "$archive"
+          unzip -Z1 "$archive" > listing.txt
+          fail=0
+
+          for expected in manifest.json background.js popup.html sidepanel.html options.html viewer.html icon/128.png; do
+            if ! grep -Fxq "$expected" listing.txt; then
+              echo "MISSING from ZIP: $expected"
+              fail=1
+            fi
+          done
+
+          for leak in .github/ .claude/ .agents/ store/ docs/ tests/ CLAUDE.md tallpage-context.md .mcp.json; do
+            if grep -Fq "$leak" listing.txt; then
+              echo "LEAKED into ZIP: $leak"
+              fail=1
+            fi
+          done
+
+          exit $fail
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tallpage-chrome
+          path: .output/tallpage-*-chrome.zip
+          retention-days: 14

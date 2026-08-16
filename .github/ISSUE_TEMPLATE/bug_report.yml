@@ -1,0 +1,94 @@
+name: Bug report
+description: An export failed, looked wrong, or did not behave as documented
+labels: ['bug']
+body:
+  - type: markdown
+    attributes:
+      value: >-
+        Please do not include private page contents or credentials. For a security
+        vulnerability, stop here and follow the private reporting instructions in
+        [SECURITY.md](https://github.com/ElecTreeFrying/tallpage/blob/main/.github/SECURITY.md).
+  - type: checkboxes
+    id: prior
+    attributes:
+      label: Before filing
+      options:
+        - label: I searched [existing issues](https://github.com/ElecTreeFrying/tallpage/issues?q=is%3Aissue) and this is not a duplicate
+          required: true
+        - label: I reproduced this on a public or non-sensitive page, or removed all private information from the report
+          required: true
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: One or two sentences describing what went wrong and how much it affects your use.
+      placeholder: The PDF export completes, but the lower half of the page is blank.
+    validations:
+      required: true
+  - type: dropdown
+    id: format
+    attributes:
+      label: Export format
+      options:
+        - PNG
+        - PDF
+        - HTML
+        - Markdown
+        - The issue affects more than one format
+        - The issue happens before a format is exported
+    validations:
+      required: true
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Where did it happen?
+      options:
+        - Toolbar popup
+        - Side panel
+        - Options page
+        - Markdown viewer
+        - Downloaded or opened export
+    validations:
+      required: true
+  - type: input
+    id: page
+    attributes:
+      label: Public example page
+      description: Optional. Provide a public URL only; never share a private account or document URL.
+      placeholder: https://example.com/long-page
+  - type: textarea
+    id: behavior
+    attributes:
+      label: Actual result and expected result
+      description: Describe both outcomes. Attach a sanitized screenshot or export if it helps.
+      placeholder: |
+        Actual: The export stops after the third section.
+        Expected: The downloaded file contains the complete page through the footer.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: Numbered steps starting from opening the page.
+      placeholder: |
+        1. Open the example page and wait for it to finish loading
+        2. Open Tallpage and choose PNG
+        3. Open the downloaded file
+        4. Observe that the footer is missing
+    validations:
+      required: true
+  - type: textarea
+    id: settings
+    attributes:
+      label: Relevant Tallpage and Chrome settings
+      description: Include whether Open after download and Allow access to file URLs are enabled.
+      placeholder: Open after download is on; Allow access to file URLs is enabled.
+  - type: input
+    id: versions
+    attributes:
+      label: Tallpage version · Chrome version · operating system
+      description: Chrome → About Google Chrome. Tallpage's version is shown on chrome://extensions.
+      placeholder: 0.1.0 · 140.0.7339.0 · macOS 15.6
+    validations:
+      required: true

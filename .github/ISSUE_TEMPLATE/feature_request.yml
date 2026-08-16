@@ -1,0 +1,58 @@
+name: Feature request
+description: A capture, export, or workflow capability you are missing
+labels: ['enhancement']
+body:
+  - type: checkboxes
+    id: prior
+    attributes:
+      label: Before filing
+      options:
+        - label: I searched [existing issues](https://github.com/ElecTreeFrying/tallpage/issues?q=is%3Aissue) and this is not already requested
+          required: true
+        - label: I checked the [README](https://github.com/ElecTreeFrying/tallpage/blob/main/README.md) and this capability is not already supported
+          required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem are you trying to solve?
+      description: Describe the real workflow rather than only the proposed control or setting.
+      placeholder: I archive long documentation pages and need to preserve...
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Desired behavior
+      description: What should Tallpage do, and what should the resulting file contain?
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Which area does this affect?
+      options:
+        - PNG export
+        - PDF export
+        - HTML export
+        - Markdown export
+        - Capture workflow or progress
+        - Settings or file handling
+        - More than one area
+    validations:
+      required: true
+  - type: textarea
+    id: example
+    attributes:
+      label: Example
+      description: A public example page, sample output, sketch, or concrete before-and-after description.
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: How do you handle this today?
+      description: Manual steps, another extension, browser DevTools, or no workable alternative.
+  - type: textarea
+    id: privacy
+    attributes:
+      label: Data or permission considerations
+      description: Does this require additional page access, network requests, cloud processing, accounts, or storage?
+      placeholder: It should remain local and should not require a new host permission.

@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Project overview
+    url: https://github.com/ElecTreeFrying/tallpage/blob/main/README.md
+    about: How Tallpage captures pages, what each export contains, permissions, and accepted limits.
+  - name: Privacy policy
+    url: https://github.com/ElecTreeFrying/tallpage/blob/main/PRIVACY.md
+    about: What page data Tallpage handles, where it stays, and when an HTML export may contact a site.
+  - name: Report a security vulnerability
+    url: https://github.com/ElecTreeFrying/tallpage/blob/main/.github/SECURITY.md
+    about: Please report security problems privately rather than opening a public issue.
