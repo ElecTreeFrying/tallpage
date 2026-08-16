@@ -1,65 +1,78 @@
-Save any webpage top to bottom — the whole document, not just the visible screen — as a PNG, PDF, HTML, or Markdown file.
+Save any webpage top to bottom — the whole thing, not just the part on your screen — as a PNG, PDF, HTML, or Markdown file.
 
-Chrome's built-in capture only sees the current viewport, and print-to-PDF reflows the page into something that no longer looks like what you were reading. Tallpage captures the page as it looks.
+One click. One file. No scrolling, no stitching, no upload.
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-⚡ ONE RENDER, NOT A STITCHED IMAGE
+📦 FOUR BUTTONS, FOUR KINDS OF FILE
 
-Most full-page screenshot tools scroll down the page and glue the frames together — which is why sticky headers repeat down the image, floating banners appear a dozen times, and lazy-loaded pictures come out blank. Tallpage resizes the page to its full height and asks Chrome's renderer to paint it once. There is nothing to stitch and nothing to guess at.
+🖼️  PNG — a picture of the entire page, exactly as it looks
+📄  PDF — the same picture, as a document you can email or print
+🌐  HTML — an offline copy you can open without internet
+📝  MARKDOWN — just the words, with ads and navigation stripped out
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-📦 CHOOSE THE FILE YOU NEED
+⚡ WHY IT'S DIFFERENT
 
-🖼 PNG — a full-page image, Chrome's own bytes, never re-encoded.
+Other full-page tools scroll down and glue screenshots together. That's why headers repeat down the image and lazy-loaded pictures come out blank.
 
-📄 PDF — the same visual capture in a single-page PDF.
+Tallpage doesn't scroll. It stretches the page to full height and lets Chrome draw the whole thing in one go.
 
-🌐 HTML — the page's current DOM saved as one portable file, with styles, images, and CSS assets embedded where access and size limits permit.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-📝 Markdown — the readable content: headings, links, images, lists, quotes, code, and tables, with the site's visual styling dropped.
+💡 GOOD FOR
 
-The same page in four forms. PNG and PDF are what the page looks like. HTML is what the page is — text stays text, links stay links. Markdown is what the page says.
+🧾  Receipts and bookings with no download button
+📚  Saving an article before it changes or disappears
+🐛  Showing someone the whole page, not four screenshots
+📖  Reading long articles as clean text
+🗂️  Getting page content into Obsidian or Notion
+🤖  Pasting real content into ChatGPT or Claude instead of a link
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-⬇️ AFTER THE EXPORT
+▶️ HOW TO USE IT
 
-Every export is downloaded. By default Tallpage also opens the finished file in a focused new tab; Options can switch that off for download-only exports. Progress and the latest result stay in the side panel after the popup closes.
+1. Open the page
+2. Click Tallpage
+3. Pick your format
 
-📋 After a PNG completes, the popup offers Copy latest PNG path and the side panel offers Copy PNG file path — paste either result straight into a local tool such as Codex or Claude Code. Browser chats still need the actual PNG uploaded or pasted.
+Done. No account, no sign-in, no setup.
 
-✅ No account, no sign-in, no upload.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔒 EVERYTHING STAYS ON YOUR COMPUTER
 
-🔒 PRIVACY AND DATA USE
+Your pages are never uploaded. No analytics, no tracking, no account. Tallpage reads the page you're on only after you click a button, and only to build the file you asked for.
 
-When you open Tallpage it reads the selected page's title and URL to identify the page and name the file. Only after you choose a format does it process what that export needs — which, depending on the format, can include the page's pixels, text, DOM, styles, images, and resource URLs.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Processing happens on your device, solely to create the file you asked for. No page data is sent to Tallpage, its developer, or any developer-controlled service. There is no analytics, advertising, tracking, or remotely hosted code.
+⚠️ ABOUT THE SCARY WARNING
 
-Export status and the latest Markdown preview live in Chrome session storage, which Chrome clears when the browser closes. A completed PNG's absolute local path can include the operating-system account or folder name; Tallpage resolves it only while the popup or side panel is open, holds it only in that surface's memory, and copies it only after you press a path-copy button. The path is never written to extension storage or sent anywhere. The only thing kept in local storage is your open-after-download preference. Tallpage requests no persistent host permissions.
+Chrome says Tallpage can "read and change all your data on all websites."
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Chrome has exactly one way to capture a full page — the same interface its developer tools use — and it shows its strongest warning for anything that touches it. There's no narrower permission to ask for.
 
-⚠️ WHY CHROME SHOWS A BROAD ACCESS WARNING
+You'll also see a "started debugging this browser" bar while an export runs. Chrome adds that automatically. It disappears when the file is saved.
 
-Capturing a full page requires Chrome's debugger interface — there is no other API that can render a whole document at once. Tallpage attaches it to the tab you selected, runs the export, and detaches when it finishes or fails. Chrome shows its standard debugging notification while that is happening.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📌 GOOD TO KNOW
 
-📌 LIMITS WORTH KNOWING
+▸ Chrome's own settings pages can't be saved by any extension
+▸ Floating chat bubbles appear once, where they start
+▸ Very long pages are saved slightly softer, never cropped
+▸ PDF text can't be selected — it's a picture
+▸ Saved HTML is a snapshot, so interactive parts won't work
+▸ Works in Chrome, Edge, Brave and other Chrome-based browsers
 
-▸ Chrome system pages, extension pages, DevTools, and other protected browser URLs cannot be exported.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-▸ Elements pinned to the screen — some floating chat buttons and cookie bars — appear once, at the position they start in.
+🔗 LINKS
 
-▸ Very tall or wide PNG and PDF exports are captured at lower pixel density so the complete page is preserved rather than cropped.
+Demo: https://www.youtube.com/watch?v=Bixfo2iODDY
+Source: https://github.com/ElecTreeFrying/tallpage
+Problems: https://github.com/ElecTreeFrying/tallpage/issues
 
-▸ PDF is a visual snapshot; its text is not selectable.
-
-▸ HTML is a static snapshot, not a working copy of a web app. Scripts and embedded frames are removed. Cross-origin or oversized resources may stay linked to their original URLs and need network access when the file is opened.
-
-▸ Opening downloaded PNG, PDF, or HTML files in a new tab requires "Allow access to file URLs" in Chrome. The download itself succeeds without it.
+Open source, MIT licence.
