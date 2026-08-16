@@ -18,6 +18,30 @@
         </span>
         <strong>{{ current.title || current.fileName }}</strong>
         <p>{{ current.fileName }}</p>
+
+        @if (current.format === 'png' && current.downloadId != null) {
+          <div class="path-action">
+            <button
+              type="button"
+              [disabled]="!pngClipboard.canCopy()"
+              (click)="pngClipboard.copy()">
+              @if (pngClipboard.canCopy()) {
+                Copy PNG file path
+              } @else if (pngClipboard.status()) {
+                PNG path unavailable
+              } @else {
+                Preparing PNG path…
+              }
+            </button>
+            <p>
+              Paste the path into Codex or Claude Code. Browser-based ChatGPT
+              and Claude chats still need the PNG uploaded or pasted.
+            </p>
+            @if (pngClipboard.status(); as copyStatus) {
+              <p class="copy-status" role="status">{{ copyStatus }}</p>
+            }
+          </div>
+        }
       }
       @case ('failed') {
         <span class="eyebrow failure">

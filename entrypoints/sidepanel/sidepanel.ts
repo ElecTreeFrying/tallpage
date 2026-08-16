@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { browser } from '#imports';
+import { createPngPathClipboard } from '@/png-path';
 import { captureProgress as captureProgressItem } from '@/storage';
 import { storageSignal } from '@/storage-signal';
 import { imports, viewProviders } from './config';
@@ -23,6 +24,8 @@ import { imports, viewProviders } from './config';
 export class Sidepanel {
 
   protected readonly progress = storageSignal(captureProgressItem);
+
+  protected readonly pngClipboard = createPngPathClipboard(this.progress);
 
   protected openOptions(): void {
     void browser.runtime.openOptionsPage();

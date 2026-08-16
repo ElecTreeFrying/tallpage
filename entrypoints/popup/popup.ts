@@ -1,6 +1,7 @@
 import { Component, computed, signal, type OnInit } from '@angular/core';
 import { browser } from '#imports';
 import { sendMessage, type CaptureReply } from '@/messaging';
+import { createPngPathClipboard } from '@/png-path';
 import { captureProgress as captureProgressItem, type ExportFormat } from '@/storage';
 import { storageSignal } from '@/storage-signal';
 import { imports, viewProviders } from './config';
@@ -43,6 +44,8 @@ interface PageInfo {
 export class Popup implements OnInit {
 
   private readonly progress = storageSignal(captureProgressItem);
+
+  protected readonly pngClipboard = createPngPathClipboard(this.progress);
 
   private readonly submitting = signal(false);
 

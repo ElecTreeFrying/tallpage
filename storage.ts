@@ -66,6 +66,9 @@ export interface CaptureProgress {
 
   fileName: string;
 
+  /** Chrome's numeric ID for a PNG download. The absolute path is never stored. */
+  downloadId: number | null;
+
   message: string;
 
 }
@@ -85,6 +88,7 @@ export const captureProgress = storage.defineItem<CaptureProgress>('session:capt
     title: '',
     url: '',
     fileName: '',
+    downloadId: null,
     message: ''
   }
 });

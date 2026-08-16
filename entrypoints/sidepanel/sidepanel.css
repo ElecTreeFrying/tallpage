@@ -33,6 +33,23 @@
   text-underline-offset: 2px;
 }
 
+.path-action {
+  display: grid;
+  gap: 6px;
+  margin-block-start: 6px;
+  padding-block-start: 10px;
+  border-block-start: 1px solid var(--tp-border, #e4e4dd);
+}
+
+.path-action button {
+  justify-self: start;
+}
+
+.activity .copy-status {
+  color: var(--tp-accent, #4d6b10);
+  font-weight: 600;
+}
+
 .eyebrow {
   color: var(--tp-text-soft, #525a68);
   font-size: 11px;

@@ -75,6 +75,7 @@ async function runCapture(format: ExportFormat) {
     title,
     url,
     fileName,
+    downloadId: null,
     message: `Exporting ${format.toUpperCase()}…`
   });
   await browser.action.setBadgeText({ text: '…' });
@@ -115,6 +116,7 @@ async function runCapture(format: ExportFormat) {
     title,
     url,
     fileName,
+    downloadId: format === 'png' ? downloadId : null,
     message: `Saved ${fileName}`
   });
   await finishBadge('');
@@ -153,6 +155,7 @@ function failedProgress(current: CaptureProgress, message: string): CaptureProgr
     title: '',
     url: '',
     fileName: '',
+    downloadId: null,
     message
   };
 }
@@ -199,14 +202,18 @@ async function toDataUrl(blob: Blob): Promise<string> {
  * leaves the worker holding a promise forever.
  */
 async function openWhenComplete(downloadId: number): Promise<void> {
-  const settled = await new Promise<boolean>((resolve) => {
-    const timer = setTimeout(() => finish(false), 15_000);
+  const complete = await new Promise<boolean>((resolve) => {
+    let settled = false;
+    let timer: ReturnType<typeof setTimeout>;
 
-    const finish = (ok: boolean): void => {
+    function finish(ok: boolean): void {
+      if (settled) return;
+
+      settled = true;
       clearTimeout(timer);
       browser.downloads.onChanged.removeListener(onChanged);
       resolve(ok);
-    };
+    }
 
     function onChanged(delta: { id: number; state?: { current?: string } }): void {
       if (delta.id !== downloadId) return;
@@ -214,27 +221,71 @@ async function openWhenComplete(downloadId: number): Promise<void> {
       if (delta.state?.current === 'interrupted') finish(false);
     }
 
+    timer = setTimeout(() => finish(false), 15_000);
     browser.downloads.onChanged.addListener(onChanged);
+
+    // Install the listener before reading current state. A tiny data-URL
+    // download can finish before this function starts; the search closes that
+    // race without opening a window between search and listener registration.
+    void browser.downloads.search({ id: downloadId }).then(
+      ([ item ]) => {
+        if (!item) finish(false);
+        else if (item.state === 'complete') finish(true);
+        else if (item.state === 'interrupted') finish(false);
+      },
+      () => finish(false)
+    );
   });
 
-  if (!settled) return;
+  if (!complete) return;
 
   try {
     const [ item ] = await browser.downloads.search({ id: downloadId });
     if (!item?.filename) return;
 
-    // A path is not a URL: spaces and non-ASCII in a page title survive into the
-    // filename and have to be escaped, or the tab opens on a truncated path.
-    //
     // Select the result immediately. The next export targets the active tab, so
     // the user returns to the source page before choosing another format.
     await browser.tabs.create({
-      url: `file://${item.filename.split('/').map(encodeURIComponent).join('/')}`,
+      url: fileUrlFor(item.filename),
       active: true
     });
   } catch {
     // No file-URL access, or the file moved. The download itself still stands.
   }
+}
+
+/** Convert Chrome's platform-local absolute download path into a valid file URL. */
+function fileUrlFor(filename: string): string {
+  const normalized = filename.replace(/\\/g, '/');
+
+  // Windows UNC paths become file://server/share/file. The host must stay out
+  // of pathname encoding; URL validates and serializes that authority.
+  if (normalized.startsWith('//')) {
+    const [ host, ...segments ] = normalized.slice(2).split('/');
+
+    if (host) {
+      const url = new URL('file:///');
+      url.host = host;
+      url.pathname = `/${segments.map(encodeURIComponent).join('/')}`;
+      return url.href;
+    }
+  }
+
+  const drive = /^([A-Za-z]):(\/.*)$/.exec(normalized);
+  const driveLetter = drive?.[1];
+  const drivePath = drive?.[2];
+
+  if (driveLetter && drivePath) {
+    return `file:///${driveLetter}:${encodeFilePath(drivePath)}`;
+  }
+
+  const absolute = normalized.startsWith('/') ? normalized : `/${normalized}`;
+  return `file://${encodeFilePath(absolute)}`;
+}
+
+/** Encode filename segments without turning path separators into data. */
+function encodeFilePath(path: string): string {
+  return path.split('/').map(encodeURIComponent).join('/');
 }
 
 /** Clear or set the toolbar badge, tolerating the action being unavailable. */

@@ -1,7 +1,7 @@
 <h1>Tallpage</h1>
 <p class="u-hint">
-  Reads this page's title, URL, pixels, or content only after you choose a
-  format. Processing stays on your device.
+  Reads this page's title and URL when you open Tallpage. Pixels or content are
+  processed only after you choose a format, and processing stays on your device.
 </p>
 
 @if (page(); as currentPage) {
@@ -27,17 +27,42 @@
   <p class="unsupported" role="status">{{ problem }}</p>
 }
 
-<div class="actions" role="group" aria-label="Download full page as">
+<div
+  class="actions"
+  role="group"
+  aria-label="Export full page or copy latest PNG path">
+  <div class="png-action" role="group" aria-label="PNG actions">
+    <button
+      type="button"
+      class="format-action"
+      aria-label="Download full page as PNG. Lossless visual capture."
+      [disabled]="busy() || !canDownload()"
+      (click)="download('png')">
+      <strong class="action-format">PNG</strong>
+      <span class="action-description">Lossless visual capture</span>
+    </button>
+    <button
+      type="button"
+      class="copy-action"
+      [disabled]="!pngClipboard.canCopy()"
+      (click)="pngClipboard.copy()">
+      <strong class="copy-label">Copy latest PNG path</strong>
+      <span class="copy-description">
+        @if (pngClipboard.status(); as copyStatus) {
+          {{ copyStatus }}
+        } @else if (pngClipboard.loading()) {
+          Finding saved PNG…
+        } @else if (pngClipboard.canCopy()) {
+          Ready to paste into a local tool
+        } @else {
+          Export PNG first
+        }
+      </span>
+    </button>
+  </div>
   <button
     type="button"
-    aria-label="Download full page as PNG. Lossless visual capture."
-    [disabled]="busy() || !canDownload()"
-    (click)="download('png')">
-    <strong class="action-format">PNG</strong>
-    <span class="action-description">Lossless visual capture</span>
-  </button>
-  <button
-    type="button"
+    class="format-action"
     aria-label="Download full page as PDF. Visual capture in one PDF page."
     [disabled]="busy() || !canDownload()"
     (click)="download('pdf')">
@@ -46,6 +71,7 @@
   </button>
   <button
     type="button"
+    class="format-action"
     aria-label="Download full page as HTML. DOM snapshot with embedded assets."
     [disabled]="busy() || !canDownload()"
     (click)="download('html')">
@@ -54,6 +80,7 @@
   </button>
   <button
     type="button"
+    class="format-action"
     aria-label="Download full page as Markdown. Readable content without page chrome."
     [disabled]="busy() || !canDownload()"
     (click)="download('md')">

@@ -78,6 +78,7 @@ describe('storage', () => {
         title: '',
         url: '',
         fileName: '',
+        downloadId: null,
         message: ''
       });
     });
@@ -89,6 +90,7 @@ describe('storage', () => {
         title: 'A page',
         url: 'https://example.com/',
         fileName: 'a-page.png',
+        downloadId: null,
         message: 'Exporting PNG…'
       });
 
@@ -99,6 +101,7 @@ describe('storage', () => {
           title: 'A page',
           url: 'https://example.com/',
           fileName: 'a-page.png',
+          downloadId: null,
           message: 'Exporting PNG…'
         }
       });

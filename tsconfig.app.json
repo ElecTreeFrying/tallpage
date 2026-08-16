@@ -15,6 +15,7 @@
     "entrypoints/viewer/**/*.ts",
     "storage.ts",
     "storage-signal.ts",
+    "png-path.ts",
     "messaging.ts"
   ]
 }
