@@ -7,9 +7,8 @@ import angular from '@analogjs/vite-plugin-angular';
  * This is the load-bearing part of the Angular-on-WXT setup. Angular is not an
  * official WXT framework module, so it arrives as an ordinary Vite plugin — and
  * left alone that plugin compiles every file in the project, including the
- * background service worker and the content script. Both must stay plain
- * TypeScript: the content script is injected into every matched page and has no
- * business carrying an Angular runtime.
+ * background service worker. That worker must stay plain TypeScript: it is an
+ * extension-platform entrypoint, not an Angular surface.
  *
  * Add a directory here when it needs Angular templates, and add the same path
  * to `include` in tsconfig.app.json. The two lists are one decision recorded
@@ -26,24 +25,24 @@ const ANGULAR_DIRS = [
 export default defineConfig({
   manifest: {
     name: 'Tallpage',
-    description: 'Download any web page, top to bottom, as a PNG or PDF.',
+    description: 'Export the current webpage, top to bottom, as PNG, PDF, HTML, or Markdown.',
+    minimum_chrome_version: '116',
 
     // Keep this minimal. Chrome Web Store policy, enforced since 2026-08-01,
     // requires everything requested to be strictly necessary for the stated
     // purpose — add a permission when a feature needs it, never upfront.
     //
-    // `debugger` is the expensive one and it is deliberate. Full-page capture
-    // has no other correct implementation: `tabs.captureVisibleTab` sees only
-    // the viewport, so the alternative is scrolling and stitching frames by
-    // hand, which guesses at sticky positioning, scroll-triggered reveals, lazy
-    // images and late-injected chrome — and gets one of them wrong on most
-    // real sites. `Page.captureScreenshot` with `captureBeyondViewport` asks
-    // Chrome's renderer for the whole document instead, and guesses at nothing.
+    // `debugger` is the expensive one and it is deliberate. Chrome exposes no
+    // other renderer-level full-page capture API: `tabs.captureVisibleTab` sees
+    // only the viewport, so the alternative is scrolling and stitching frames
+    // by hand, which guesses at sticky positioning, scroll-triggered reveals,
+    // lazy images and late-injected chrome. Resizing the emulated viewport and
+    // asking `Page.captureScreenshot` for one paint avoids those heuristics.
     //
     // Know what it costs before touching it: `debugger` CANNOT be an optional
     // permission, it warns "Read and change all your data on all websites" at
-    // install, it shows an undismissable banner while attached, and it
-    // guarantees manual store review.
+    // install, it shows an undismissable banner while attached, and it can
+    // make review deeper and slower.
     //
     // `activeTab` stays because the toolbar click is what exposes the tab's
     // title, which names the downloaded file.
