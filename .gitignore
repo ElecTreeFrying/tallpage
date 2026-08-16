@@ -22,6 +22,7 @@ web-ext.config.ts
 .claude/
 .mcp.json
 CLAUDE.md
+tallpage-context.md
 
 # Editor directories and files
 .vscode/*
