@@ -5,9 +5,10 @@ import type { RasterImage } from '@/pdf';
  * Full-page capture through the DevTools Protocol.
  *
  * The emulated viewport is resized to the document, the page is given a moment
- * to lay out at that size, and Chrome's renderer paints it once. Nothing here
- * scrolls the page, stitches frames, or reasons about the page's behaviour —
- * which is the entire argument for it.
+ * to lay out at that size, one settled-size correction is applied if necessary,
+ * and Chrome's renderer paints it once. Nothing here scrolls the page, stitches
+ * frames, or reasons about the page's behaviour — which is the entire argument
+ * for it.
  *
  * **`captureBeyondViewport: true` is NOT the mechanism**, despite reading like
  * it. It asks for pixels past the viewport edge without telling the renderer
@@ -31,7 +32,8 @@ import type { RasterImage } from '@/pdf';
  * optional, it warns "Read and change all your data on all websites" at install,
  * and Chrome paints an undismissable "started debugging this browser" bar for
  * the duration of the attach. That is a real price, paid once per capture, in
- * exchange for output that is correct on every page rather than most of them.
+ * exchange for one renderer paint instead of scroll-and-stitch heuristics. The
+ * renderer path still has documented limits, notably fixed-position layout.
  */
 
 /**
@@ -51,6 +53,14 @@ interface LayoutMetrics {
   cssContentSize?: { width: number; height: number };
 
   contentSize?: { width: number; height: number };
+
+}
+
+interface PageSize {
+
+  width: number;
+
+  height: number;
 
 }
 
@@ -74,12 +84,9 @@ export interface CapturedPage {
  * needs one too.
  */
 export async function captureFullPage(tabId: number): Promise<CapturedPage> {
-  const size = await documentSize(tabId);
+  const initial = await documentSize(tabId);
   const ratio = await devicePixelRatio(tabId);
-
-  // Cap the scale so neither axis passes Chrome's screenshot limit. A tall page
-  // comes back whole and softer rather than sharp and truncated.
-  const scale = Math.min(ratio, MAX_SHOT_SIDE / Math.max(size.width, size.height, 1));
+  const initialScale = screenshotScale(initial, ratio);
 
   // THE step that makes this work. `captureBeyondViewport` on its own asks for
   // pixels past the viewport edge without telling the renderer the viewport
@@ -87,26 +94,28 @@ export async function captureFullPage(tabId: number): Promise<CapturedPage> {
   // screenful down the whole image. Resizing the emulated viewport to the
   // document first means the page genuinely lays out at full height and there
   // is a single render to capture. This is what Puppeteer and Playwright do.
-  await browser.debugger.sendCommand({ tabId }, 'Emulation.setDeviceMetricsOverride', {
-    width: Math.ceil(size.width),
-    height: Math.ceil(size.height),
-    deviceScaleFactor: scale,
-    mobile: false
-  });
+  await resizeViewport(tabId, initial, initialScale);
 
   try {
     await new Promise((resolve) => setTimeout(resolve, RELAYOUT_MS));
 
-    // Re-measure: laying out at full height can change the document's own
-    // height — a responsive breakpoint, or content that reflows once it is no
-    // longer clipped. The second reading is the one that matches what will be
-    // painted.
+    // Laying out at full height can change the document's own dimensions. Apply
+    // that second reading back to the viewport once; merely putting it in a clip
+    // would still leave `captureBeyondViewport: false` painting the old size.
     const settled = await documentSize(tabId);
+    const settledScale = screenshotScale(settled, ratio);
 
+    if (!sameViewport(initial, settled) || settledScale !== initialScale) {
+      await resizeViewport(tabId, settled, settledScale);
+      await new Promise((resolve) => setTimeout(resolve, RELAYOUT_MS));
+    }
+
+    // No clip is deliberate. The device scale factor already controls the PNG's
+    // output density; repeating it as `clip.scale` would apply it twice. With the
+    // viewport at the settled document size, the visible surface is the capture.
     const shot = await browser.debugger.sendCommand({ tabId }, 'Page.captureScreenshot', {
       format: 'png',
-      captureBeyondViewport: false,
-      clip: { x: 0, y: 0, width: settled.width, height: settled.height, scale }
+      captureBeyondViewport: false
     }) as { data: string };
 
     return { png: base64ToBlob(shot.data, 'image/png'), cssWidth: settled.width, cssHeight: settled.height };
@@ -115,8 +124,28 @@ export async function captureFullPage(tabId: number): Promise<CapturedPage> {
   }
 }
 
+/** Keep the raster inside Chrome's limit without cropping the CSS document. */
+function screenshotScale(size: PageSize, ratio: number): number {
+  return Math.min(ratio, MAX_SHOT_SIDE / Math.max(size.width, size.height, 1));
+}
+
+/** Make the visible renderer surface match the complete CSS document. */
+async function resizeViewport(tabId: number, size: PageSize, scale: number): Promise<void> {
+  await browser.debugger.sendCommand({ tabId }, 'Emulation.setDeviceMetricsOverride', {
+    width: Math.ceil(size.width),
+    height: Math.ceil(size.height),
+    deviceScaleFactor: scale,
+    mobile: false
+  });
+}
+
+/** CDP accepts integer viewport dimensions, so compare the values it receives. */
+function sameViewport(left: PageSize, right: PageSize): boolean {
+  return Math.ceil(left.width) === Math.ceil(right.width) && Math.ceil(left.height) === Math.ceil(right.height);
+}
+
 /** The full document size in CSS pixels. */
-async function documentSize(tabId: number): Promise<{ width: number; height: number }> {
+async function documentSize(tabId: number): Promise<PageSize> {
   const metrics = await browser.debugger.sendCommand({ tabId }, 'Page.getLayoutMetrics') as LayoutMetrics;
 
   // `cssContentSize` is the modern field and is already in CSS pixels;

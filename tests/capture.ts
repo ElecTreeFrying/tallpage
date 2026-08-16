@@ -3,7 +3,7 @@ import { browser } from '#imports';
 import { captureFullPage } from '@/capture';
 
 /**
- * The engine's correctness is a claim about the *order and shape* of four
+ * The engine's correctness is a claim about the *order and shape* of its
  * protocol commands, which is exactly what a stub can hold to account.
  *
  * The mechanism is `Emulation.setDeviceMetricsOverride` resizing the viewport to
@@ -117,7 +117,9 @@ describe('captureFullPage', () => {
 
     await captureFullPage(1);
 
-    expect(stub.paramsOf('Page.captureScreenshot')).toMatchObject({ format: 'png', captureBeyondViewport: false });
+    const screenshot = stub.paramsOf('Page.captureScreenshot');
+    expect(screenshot).toMatchObject({ format: 'png', captureBeyondViewport: false });
+    expect(screenshot).not.toHaveProperty('clip');
   });
 
   it('clears the viewport override once the capture is done', async () => {
@@ -138,7 +140,7 @@ describe('captureFullPage', () => {
     expect(stub.methods()).toContain('Emulation.clearDeviceMetricsOverride');
   });
 
-  it('re-measures after the resize and captures the settled height', async () => {
+  it('re-measures after the resize and applies the settled height before capturing', async () => {
     // Laying out at full height can change the document's own height — a
     // responsive breakpoint, or content that reflows once it stops being
     // clipped. The second reading is the one that matches what gets painted.
@@ -148,7 +150,10 @@ describe('captureFullPage', () => {
 
     const captured = await captureFullPage(1);
 
-    expect(stub.paramsOf('Page.captureScreenshot')['clip']).toMatchObject({ width: 800, height: 2400 });
+    const resizes = stub.sent.filter((entry) => entry.method === 'Emulation.setDeviceMetricsOverride');
+    expect(resizes).toHaveLength(2);
+    expect(resizes[1]?.params).toMatchObject({ width: 800, height: 2400 });
+    expect(stub.methods().lastIndexOf('Emulation.setDeviceMetricsOverride')).toBeLessThan(stub.methods().indexOf('Page.captureScreenshot'));
     expect(captured.cssHeight).toBe(2400);
   });
 
