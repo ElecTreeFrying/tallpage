@@ -1,7 +1,7 @@
 import { browser } from '#imports';
 
 /**
- * The page as one offline HTML snapshot.
+ * The page as one portable HTML snapshot.
  *
  * A screenshot is pixels; this is the document. Stylesheets, images and CSS
  * assets are pulled in and rewritten as `data:` URIs when the page allows it.

@@ -47,7 +47,7 @@ background   →  debugger.attach
              →  Page.getLayoutMetrics             document size in CSS pixels
      ↓
              →  Emulation.setDeviceMetricsOverride  viewport := the whole document
-     ↓                                              wait, then re-measure
+     ↓                                              wait, re-measure, correct once if changed
              →  Page.captureScreenshot            one render, no tiling
      ↓
              →  Emulation.clearDeviceMetricsOverride
@@ -96,13 +96,13 @@ host permissions.
 | `background.ts` | woken per event, killed when idle | the capture run — it outlives the popup |
 | `popup/`        | destroyed on blur                 | the four download buttons               |
 | `viewer/`       | an ordinary page, no manifest key | rendering the Markdown export           |
-| `sidepanel/`    | survives navigation               | progress and preview                    |
+| `sidepanel/`    | survives navigation               | progress and latest export summary      |
 | `options/`      | an ordinary page                  | settings                                |
 
 Eight root modules are shared across them: `storage.ts` (persisted state), `messaging.ts` (the
 typed cross-surface protocol), `storage-signal.ts` (binds a storage item to an Angular signal),
 `debugger-session.ts` (one attached CDP session, always released), `capture.ts` (the screenshot
-pipeline), `archive.ts` (the page as an offline HTML snapshot), `markdown.ts` (the page's
+pipeline), `archive.ts` (the page as a portable HTML snapshot), `markdown.ts` (the page's
 readable content as Markdown) and `pdf.ts` (a single-page PDF around one raster, with no
 dependencies).
 

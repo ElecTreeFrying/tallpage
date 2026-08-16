@@ -22,7 +22,7 @@ import { storage } from '#imports';
  * What a capture is written out as.
  *
  * PNG and PDF are the same pixels — PDF wraps the raster. HTML is a different
- * artefact entirely: the live DOM saved as an offline snapshot, with text that
+ * artefact entirely: the live DOM saved as a portable snapshot, with text that
  * is still text.
  */
 export type ExportFormat = 'png' | 'pdf' | 'html' | 'md';

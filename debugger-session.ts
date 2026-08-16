@@ -3,9 +3,9 @@ import { browser } from '#imports';
 /**
  * One attached DevTools Protocol session, released whatever happens.
  *
- * Both exports need the debugger — the screenshot to resize the viewport and
- * paint, the HTML archive to run its serializer in the page — so the attach
- * belongs to neither of them and sits here instead.
+ * Every export needs the debugger — visual capture resizes the viewport and
+ * paints, while HTML and Markdown run serializers in the page — so the attach
+ * belongs to none of the producers and sits here instead.
  *
  * **The `finally` is the whole point of the module.** A session left attached
  * keeps Chrome's "started debugging this browser" bar on screen with no way for

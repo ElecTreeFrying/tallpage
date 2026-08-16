@@ -46,11 +46,11 @@
   </button>
   <button
     type="button"
-    aria-label="Download full page as HTML. Offline DOM snapshot."
+    aria-label="Download full page as HTML. DOM snapshot with embedded assets."
     [disabled]="busy() || !canDownload()"
     (click)="download('html')">
     <strong class="action-format">HTML</strong>
-    <span class="action-description">Offline DOM snapshot</span>
+    <span class="action-description">DOM snapshot with embedded assets</span>
   </button>
   <button
     type="button"
