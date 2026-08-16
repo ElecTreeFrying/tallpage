@@ -56,16 +56,19 @@ type Handlers = {
 /**
  * Register every handler in one call, from the background script.
  *
- * The listener returns a promise rather than calling `sendResponse`. Chrome
- * reads a returned promise as "reply when this resolves"; the callback form
- * needs a bare `return true` to hold the channel open, and omitting it is the
- * classic cause of a message that never comes back.
+ * The listener calls `sendResponse` and returns the literal `true` that keeps
+ * the channel open while an asynchronous handler settles. This is the stable
+ * contract across supported Chromium versions. Returning the promise directly
+ * starts at Chrome 148 and is still on a staged rollout, so it cannot be the
+ * baseline yet.
  */
 export function registerHandlers(handlers: Handlers): void {
-  browser.runtime.onMessage.addListener((message: Message, sender: Browser.runtime.MessageSender) => {
+  browser.runtime.onMessage.addListener((message: Message, sender: Browser.runtime.MessageSender, sendResponse) => {
     const handler = handlers[message.type];
     if (!handler) return;
 
-    return Promise.resolve(handler(message as never, sender));
+    void Promise.resolve(handler(message as never, sender)).then(sendResponse);
+
+    return true;
   });
 }
