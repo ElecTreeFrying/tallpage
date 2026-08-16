@@ -27,6 +27,9 @@ tallpage-context.md
 # Maintainer-only release notes and backlog — kept locally, never published.
 docs/
 
+# Manual browser QA — local checklists and test fixtures, never published.
+/qa/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

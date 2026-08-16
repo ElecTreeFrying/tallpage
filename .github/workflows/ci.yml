@@ -94,7 +94,7 @@ jobs:
             fi
           done
 
-          for leak in .github/ .claude/ .agents/ store/ docs/ tests/ CLAUDE.md tallpage-context.md .mcp.json; do
+          for leak in .github/ .claude/ .agents/ store/ docs/ qa/ tests/ CLAUDE.md tallpage-context.md .mcp.json; do
             if grep -Fq "$leak" listing.txt; then
               echo "LEAKED into ZIP: $leak"
               fail=1
