@@ -33,11 +33,14 @@ export interface Settings {
 
   format: ExportFormat;
 
+  openAfterDownload: boolean;
+
 }
 
 export const DEFAULT_SETTINGS: Settings = {
   enabled: true,
-  format: 'png'
+  format: 'png',
+  openAfterDownload: true
 };
 
 /**
@@ -47,9 +50,10 @@ export const DEFAULT_SETTINGS: Settings = {
  */
 export const settings = storage.defineItem<Settings>('local:settings', {
   fallback: DEFAULT_SETTINGS,
-  version: 2,
+  version: 3,
   migrations: {
-    2: (previous: Partial<Settings>): Settings => ({ ...DEFAULT_SETTINGS, ...previous })
+    2: (previous: Partial<Settings>): Settings => ({ ...DEFAULT_SETTINGS, ...previous }),
+    3: (previous: Partial<Settings>): Settings => ({ ...DEFAULT_SETTINGS, ...previous })
   }
 });
 

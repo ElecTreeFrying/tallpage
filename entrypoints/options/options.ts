@@ -7,9 +7,8 @@ import { imports, viewProviders } from './config';
  * The full-page settings surface, opened from `browser.runtime.openOptionsPage()`
  * or the extension's entry in `chrome://extensions`.
  *
- * It deliberately renders the same toggle the popup does. Both read one storage
- * key rather than each holding a copy, so a change in either is visible in the
- * other without a reload — the property worth preserving as surfaces are added.
+ * It owns persisted export behaviour. Every control writes the one settings
+ * item rather than holding a surface-local copy.
  */
 @Component({
   selector: 'tp-options',
@@ -26,6 +25,12 @@ export class Options {
     const enabled = (event.target as HTMLInputElement).checked;
 
     await settingsItem.setValue({ ...(this.settings() ?? DEFAULT_SETTINGS), enabled });
+  }
+
+  protected async onOpenAfterDownloadChange(event: Event): Promise<void> {
+    const openAfterDownload = (event.target as HTMLInputElement).checked;
+
+    await settingsItem.setValue({ ...(this.settings() ?? DEFAULT_SETTINGS), openAfterDownload });
   }
 
 }

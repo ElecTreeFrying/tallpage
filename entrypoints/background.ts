@@ -5,7 +5,7 @@ import { withDebugger } from '@/debugger-session';
 import { captureMarkdown } from '@/markdown';
 import { registerHandlers } from '@/messaging';
 import { imageToPdf } from '@/pdf';
-import { captureProgress, lastMarkdown, lastRunAt, type ExportFormat } from '@/storage';
+import { captureProgress, lastMarkdown, lastRunAt, settings as settingsItem, type ExportFormat } from '@/storage';
 
 /**
  * The MV3 service worker. Read this before adding anything to it.
@@ -59,10 +59,10 @@ async function runCapture(format: ExportFormat) {
   const [ tab ] = await browser.tabs.query({ active: true, currentWindow: true });
   if (tab?.id == null || tab.windowId == null) throw new Error('No active tab');
 
-  // Refusing browser and extension pages is not tidiness — it closes a loop.
-  // Every export opens its result in a tab, and that tab becomes the active
-  // one, so the next export would target the previous export. The Markdown
-  // viewer is this extension's own page and would otherwise be captured as a
+  const currentSettings = await settingsItem.getValue();
+
+  // Refusing browser and extension pages is not tidiness — the Markdown viewer
+  // becomes active after an export and would otherwise be captured as a
   // screenshot of itself, inheriting its filename as the "page title".
   if (UNCAPTURABLE.test(tab.url ?? '')) {
     throw new Error('Switch to the page you want to export — this is a browser page.');
@@ -106,14 +106,17 @@ async function runCapture(format: ExportFormat) {
   await captureProgress.setValue({ running: false, fraction: 1 });
   await finishBadge('');
 
+  if (!currentSettings.openAfterDownload) {
+    return { ok: true, captured: height, requested: height };
+  }
+
   // Markdown opens in the extension's own viewer — Chrome renders a `.md` file
   // as plain text, which is not what "open the Markdown" means. Every other
   // format the browser can display itself.
   //
-  // The viewer DOES take focus, unlike the file tabs: a rendered document is
-  // meant to be read now, where a saved PNG is an artefact you open when you
-  // want it. Capturing from the focused viewer is refused rather than looped —
-  // it is a `chrome-extension:` page, which `UNCAPTURABLE` rejects.
+  // Every result takes focus. Capturing from the focused viewer is refused
+  // rather than looped — it is a `chrome-extension:` page, which
+  // `UNCAPTURABLE` rejects.
   if (format === 'md') {
     await browser.tabs.create({ url: browser.runtime.getURL('/viewer.html') });
   } else {
@@ -192,13 +195,11 @@ async function openWhenComplete(downloadId: number): Promise<void> {
     // A path is not a URL: spaces and non-ASCII in a page title survive into the
     // filename and have to be escaped, or the tab opens on a truncated path.
     //
-    // `active: false` matters more than it looks. A focused result tab becomes
-    // the active tab, so the next export would target it instead of the page —
-    // exporting the previous export. The tab still opens; it just does not
-    // steal the page out from under a second click.
+    // Select the result immediately. The next export targets the active tab, so
+    // the user returns to the source page before choosing another format.
     await browser.tabs.create({
       url: `file://${item.filename.split('/').map(encodeURIComponent).join('/')}`,
-      active: false
+      active: true
     });
   } catch {
     // No file-URL access, or the file moved. The download itself still stands.

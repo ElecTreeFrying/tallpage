@@ -1,9 +1,23 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, signal, type OnInit } from '@angular/core';
 import { browser } from '#imports';
-import { sendMessage } from '@/messaging';
+import { sendMessage, type CaptureReply } from '@/messaging';
 import { captureProgress as captureProgressItem, type ExportFormat } from '@/storage';
 import { storageSignal } from '@/storage-signal';
 import { imports, viewProviders } from './config';
+
+const UNCAPTURABLE = /^(chrome|chrome-extension|edge|about|devtools|view-source):/i;
+
+interface PageInfo {
+
+  capturable: boolean;
+
+  problem: string;
+
+  title: string;
+
+  url: string;
+
+}
 
 /**
  * The shortest-lived surface. Chrome destroys the popup the moment it loses
@@ -24,13 +38,17 @@ import { imports, viewProviders } from './config';
   host: { class: 'c-popup' },
   imports, viewProviders
 })
-export class Popup {
+export class Popup implements OnInit {
 
   private readonly progress = storageSignal(captureProgressItem);
 
   protected readonly busy = signal(false);
 
   protected readonly outcome = signal('');
+
+  protected readonly page = signal<PageInfo | null>(null);
+
+  protected readonly canDownload = computed(() => this.page()?.capturable ?? false);
 
   protected readonly status = computed(() => {
     const current = this.progress();
@@ -39,11 +57,55 @@ export class Popup {
     return this.outcome();
   });
 
+  ngOnInit(): void {
+    void this.loadPage();
+  }
+
+  private async loadPage(): Promise<void> {
+    try {
+      const [ tab ] = await browser.tabs.query({ active: true, currentWindow: true });
+      if (!tab) return;
+
+      const url = tab.url ?? '';
+      const capturable = !UNCAPTURABLE.test(url);
+
+      this.page.set({
+        capturable,
+        problem: capturable
+          ? ''
+          : 'Browser and extension pages cannot be exported. Switch to a regular webpage and reopen Tallpage.',
+        title: tab.title?.trim() || 'Untitled page',
+        url
+      });
+    } catch {
+      // The action can open on a browser-owned page whose details are withheld;
+      // keep the worker's own guard authoritative if the target changes later.
+      this.page.set({
+        capturable: false,
+        problem: 'Tallpage cannot read this page. Switch to a regular webpage and reopen Tallpage.',
+        title: 'Page unavailable',
+        url: ''
+      });
+    }
+  }
+
   protected async download(format: ExportFormat): Promise<void> {
     this.busy.set(true);
     this.outcome.set('');
 
-    const reply = await sendMessage({ type: 'capture', format });
+    // `sendMessage` rejects outright when no receiver answers — the worker
+    // failed to start, or the extension was reloaded while this popup was open.
+    // Without this the rejection escapes, `busy` is never cleared, and every
+    // button stays disabled behind a popup that says nothing about why.
+    let reply: CaptureReply;
+    try {
+      reply = await sendMessage({ type: 'capture', format });
+    } catch (error: unknown) {
+      this.busy.set(false);
+      this.outcome.set(error instanceof Error ? error.message : 'The extension did not respond.');
+
+      return;
+    }
 
     this.busy.set(false);
 
@@ -61,9 +123,8 @@ export class Popup {
       return;
     }
 
-    // The worker opens the saved file in a new tab, which takes focus and
-    // destroys this popup anyway. Closing first keeps that from looking like a
-    // crash.
+    // A successful export is complete whether the optional result tab opens or
+    // not. Close the short-lived surface rather than leaving stale status up.
     window.close();
   }
 

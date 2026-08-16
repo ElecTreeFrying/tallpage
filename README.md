@@ -86,7 +86,8 @@ Everything else stays minimal. `activeTab` is there only so the tab's title can 
 | Surface         | Lives                             | For                                     |
 | --------------- | --------------------------------- | --------------------------------------- |
 | `background.ts` | woken per event, killed when idle | the capture run — it outlives the popup |
-| `popup/`        | destroyed on blur                 | the two download buttons                |
+| `popup/`        | destroyed on blur                 | the four download buttons               |
+| `viewer/`       | an ordinary page, no manifest key | rendering the Markdown export           |
 | `sidepanel/`    | survives navigation               | progress and preview                    |
 | `options/`      | an ordinary page                  | settings                                |
 
@@ -112,7 +113,8 @@ worth saving.
 **Markdown** — the page's readable content. Headings, emphasis, links, images, lists, quotes,
 code and tables survive; navigation, chrome and styling are dropped. Lossy on purpose.
 
-**The saved file opens in a new tab automatically.** Markdown opens in the extension's own
+**The file is always downloaded and, by default, opens in a new active tab.** The options page
+can turn opening off for download-only exports. Markdown opens in the extension's own
 `viewer.html`, because Chrome renders a `.md` file as plain text — the viewer reads the export
 from session storage, so it works regardless of file access. Every other format opens the
 downloaded file directly, which needs _"Allow access to file URLs"_ on the extension (only you
@@ -125,12 +127,14 @@ through `browser.alarms`. It has no DOM either — which is why the PDF path dec
 `createImageBitmap` and `OffscreenCanvas` rather than an `<img>`, and why the download goes
 out as a `data:` URL (`URL.createObjectURL` does not exist there).
 
-**Angular compiles three directories only** — the popup, options and side panel. The
+**Angular compiles four directories only** — the popup, options, side panel and viewer. The
 background script stays plain TypeScript, enforced by `transformFilter` in `wxt.config.ts`.
 
 ## Before shipping
 
-- Replace the placeholder icons in `public/icon/` — still WXT's scaffold defaults.
+- Export the padded store-listing icon — 96×96 artwork on a 128×128 canvas. `public/icon/`
+  is the real icon set now, but its `128.png` fills its canvas, which is right for the
+  toolbar and wrong for the store grid.
 - Keep `host_permissions` empty. `debugger` is the only broad permission and it is enough.
 - Chrome Web Store policy since 2026-08-01 requires everything requested to be strictly
   necessary and disclosed upfront. This extension makes no network calls and collects

@@ -1,18 +1,61 @@
 <h1>Tallpage</h1>
 <p class="u-hint">Downloads this page, top to bottom.</p>
 
-<div class="actions">
-  <button type="button" [disabled]="busy()" (click)="download('png')">
-    Download full page as PNG
+@if (page(); as currentPage) {
+  <section class="page" aria-label="Page to export">
+    <span class="page-label">Current page</span>
+    <strong class="page-title" [title]="currentPage.title">
+      {{ currentPage.title }}
+    </strong>
+    @if (currentPage.url) {
+      <a
+        class="page-url"
+        [href]="currentPage.url"
+        target="_blank"
+        rel="noopener"
+        [title]="currentPage.url">
+        {{ currentPage.url }}
+      </a>
+    }
+  </section>
+}
+
+@if (page()?.problem; as problem) {
+  <p class="unsupported" role="status">{{ problem }}</p>
+}
+
+<div class="actions" role="group" aria-label="Download full page as">
+  <button
+    type="button"
+    aria-label="Download full page as PNG. Lossless visual capture."
+    [disabled]="busy() || !canDownload()"
+    (click)="download('png')">
+    <strong class="action-format">PNG</strong>
+    <span class="action-description">Lossless visual capture</span>
   </button>
-  <button type="button" [disabled]="busy()" (click)="download('pdf')">
-    Download full page as PDF
+  <button
+    type="button"
+    aria-label="Download full page as PDF. Visual capture in one PDF page."
+    [disabled]="busy() || !canDownload()"
+    (click)="download('pdf')">
+    <strong class="action-format">PDF</strong>
+    <span class="action-description">Visual capture in one PDF page</span>
   </button>
-  <button type="button" [disabled]="busy()" (click)="download('html')">
-    Download full page as HTML
+  <button
+    type="button"
+    aria-label="Download full page as HTML. Self-contained offline snapshot."
+    [disabled]="busy() || !canDownload()"
+    (click)="download('html')">
+    <strong class="action-format">HTML</strong>
+    <span class="action-description">Self-contained offline snapshot</span>
   </button>
-  <button type="button" [disabled]="busy()" (click)="download('md')">
-    Download full page as Markdown
+  <button
+    type="button"
+    aria-label="Download full page as Markdown. Readable content without page chrome."
+    [disabled]="busy() || !canDownload()"
+    (click)="download('md')">
+    <strong class="action-format">Markdown</strong>
+    <span class="action-description">Readable content without page chrome</span>
   </button>
 </div>
 
