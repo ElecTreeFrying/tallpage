@@ -7,20 +7,14 @@
   <label>
     <input
       type="checkbox"
-      [checked]="settings()?.enabled ?? false"
-      [disabled]="settings() === null"
-      (change)="onToggle($event)" />
-    Enabled
-  </label>
-</div>
-
-<div class="u-row">
-  <label>
-    <input
-      type="checkbox"
       [checked]="settings()?.openAfterDownload ?? true"
       [disabled]="settings() === null"
       (change)="onOpenAfterDownloadChange($event)" />
     Open downloaded files in a new tab
   </label>
 </div>
+
+<p class="privacy">
+  Tallpage processes exports on your device and does not send page content to a
+  Tallpage server.
+</p>

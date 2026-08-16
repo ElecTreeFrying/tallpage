@@ -11,13 +11,9 @@ import type { ExportFormat } from '@/storage';
  * `MessageReplies`, and both ends are forced to agree.
  */
 
-export type Message =
-  | { type: 'ping' }
-  | { type: 'capture'; format: ExportFormat };
+export type Message = { type: 'capture'; format: ExportFormat };
 
 export interface MessageReplies {
-
-  ping: { pong: true; at: number };
 
   capture: CaptureReply;
 
@@ -44,7 +40,7 @@ export interface CaptureReply {
 
 }
 
-/** Send from any surface — popup, options, sidepanel or content script. */
+/** Send from any extension surface. */
 export function sendMessage<T extends Message['type']>(message: Extract<Message, { type: T }>): Promise<MessageReplies[T]> {
   return browser.runtime.sendMessage(message) as Promise<MessageReplies[T]>;
 }

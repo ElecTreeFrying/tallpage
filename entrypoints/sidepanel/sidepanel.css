@@ -1,4 +1,87 @@
 :host {
   display: block;
   padding: var(--tp-surface-pad, 16px);
+  container-type: inline-size;
+}
+
+.activity {
+  display: grid;
+  gap: 6px;
+  margin-block-start: 20px;
+  padding: 16px;
+  border: 1px solid var(--tp-border-strong, #767e8c);
+  border-radius: 8px;
+  animation: tp-rise var(--tp-settle, 260ms) var(--tp-ease, ease) both;
+}
+
+.activity strong,
+.activity a,
+.activity p {
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+
+.activity p {
+  margin: 0;
+  color: var(--tp-text-soft, #525a68);
+  font-size: 12px;
+}
+
+.activity a {
+  color: var(--tp-accent, #4d6b10);
+  font-size: 11px;
+  text-underline-offset: 2px;
+}
+
+.eyebrow {
+  color: var(--tp-text-soft, #525a68);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.success {
+  color: var(--tp-accent, #4d6b10);
+}
+
+.failure {
+  color: var(--tp-text, #101828);
+}
+
+.bar {
+  block-size: 3px;
+  margin-block-start: 4px;
+  border-radius: 999px;
+  background: var(--tp-border, #e4e4dd);
+  overflow: hidden;
+}
+
+.bar span {
+  display: block;
+  inline-size: 30%;
+  block-size: 100%;
+  border-radius: inherit;
+  background: var(--tp-accent, #4d6b10);
+  animation: tp-sweep 1.1s var(--tp-ease, ease) infinite;
+}
+
+.privacy {
+  margin-block: 16px 0;
+  color: var(--tp-text-soft, #525a68);
+  font-size: 12px;
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-block-start: 16px;
+  padding-block-start: 12px;
+  border-block-start: 1px solid var(--tp-border, #e4e4dd);
+}
+
+@container (min-width: 28rem) {
+  .activity {
+    padding: 20px;
+  }
 }

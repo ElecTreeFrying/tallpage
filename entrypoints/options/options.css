@@ -4,3 +4,11 @@
   margin-inline: auto;
   padding: var(--tp-surface-pad, 16px);
 }
+
+.privacy {
+  margin-block-start: 16px;
+  padding-block-start: 12px;
+  border-block-start: 1px solid var(--tp-border, #e4e4dd);
+  color: var(--tp-text-soft, #525a68);
+  font-size: 12px;
+}

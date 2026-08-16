@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { fakeBrowser } from 'wxt/testing/fake-browser';
-import { settings, captureProgress, lastMarkdown, lastRunAt, DEFAULT_SETTINGS } from '@/storage';
+import { settings, captureProgress, lastMarkdown, DEFAULT_SETTINGS } from '@/storage';
 
 /**
  * The service worker keeps no state, so every claim about what the extension
@@ -22,33 +22,33 @@ describe('storage', () => {
 
     it('falls back to the defaults on a profile that has never stored them', async () => {
       await expect(settings.getValue()).resolves.toEqual(DEFAULT_SETTINGS);
-      expect(DEFAULT_SETTINGS).toEqual({ enabled: true, format: 'png', openAfterDownload: true });
+      expect(DEFAULT_SETTINGS).toEqual({ openAfterDownload: true });
     });
 
     it('round-trips a stored value', async () => {
-      await settings.setValue({ enabled: false, format: 'md', openAfterDownload: false });
+      await settings.setValue({ openAfterDownload: false });
 
-      await expect(settings.getValue()).resolves.toEqual({ enabled: false, format: 'md', openAfterDownload: false });
+      await expect(settings.getValue()).resolves.toEqual({ openAfterDownload: false });
     });
 
     it('keeps settings in local storage, which survives a browser restart', async () => {
-      await settings.setValue({ enabled: true, format: 'pdf', openAfterDownload: true });
+      await settings.setValue({ openAfterDownload: true });
 
       await expect(fakeBrowser.storage.local.get('settings')).resolves.toEqual({
-        settings: { enabled: true, format: 'pdf', openAfterDownload: true }
+        settings: { openAfterDownload: true }
       });
       await expect(fakeBrowser.storage.session.get('settings')).resolves.toEqual({});
     });
 
-    it('migrates a v1 record forward without losing what it held', async () => {
-      // A v1 record predates `format` and `openAfterDownload`, and carries no
-      // version metadata, so the library reads it as v1. Seeded through the raw
-      // area rather than the item, because the item is what is under test.
+    it('migrates a v1 record forward and drops retired fields', async () => {
+      // A v1 record predates `openAfterDownload` and carries no version
+      // metadata, so the library reads it as v1. Seeded through the raw area
+      // rather than the item, because the item is what is under test.
       await fakeBrowser.storage.local.set({ settings: { enabled: false } });
 
       await settings.migrate();
 
-      await expect(settings.getValue()).resolves.toEqual({ enabled: false, format: 'png', openAfterDownload: true });
+      await expect(settings.getValue()).resolves.toEqual({ openAfterDownload: true });
     });
 
     it('stamps the new version so the migration does not run twice', async () => {
@@ -56,15 +56,15 @@ describe('storage', () => {
 
       await settings.migrate();
 
-      await expect(settings.getMeta()).resolves.toEqual({ v: 3 });
+      await expect(settings.getMeta()).resolves.toEqual({ v: 4 });
     });
 
     it('leaves a record already at the current version untouched', async () => {
-      await fakeBrowser.storage.local.set({ settings: { enabled: false, format: 'html', openAfterDownload: false }, settings$: { v: 3 } });
+      await fakeBrowser.storage.local.set({ settings: { openAfterDownload: false }, settings$: { v: 4 } });
 
       await settings.migrate();
 
-      await expect(settings.getValue()).resolves.toEqual({ enabled: false, format: 'html', openAfterDownload: false });
+      await expect(settings.getValue()).resolves.toEqual({ openAfterDownload: false });
     });
 
   });
@@ -72,14 +72,35 @@ describe('storage', () => {
   describe('session-scoped items', () => {
 
     it('reports no capture running before anything has started one', async () => {
-      await expect(captureProgress.getValue()).resolves.toEqual({ running: false, fraction: 0 });
+      await expect(captureProgress.getValue()).resolves.toEqual({
+        state: 'idle',
+        format: null,
+        title: '',
+        url: '',
+        fileName: '',
+        message: ''
+      });
     });
 
     it('keeps progress in session storage, which the worker restart does not outlive', async () => {
-      await captureProgress.setValue({ running: true, fraction: 0.5 });
+      await captureProgress.setValue({
+        state: 'running',
+        format: 'png',
+        title: 'A page',
+        url: 'https://example.com/',
+        fileName: 'a-page.png',
+        message: 'Exporting PNG…'
+      });
 
       await expect(fakeBrowser.storage.session.get('capture-progress')).resolves.toEqual({
-        'capture-progress': { running: true, fraction: 0.5 }
+        'capture-progress': {
+          state: 'running',
+          format: 'png',
+          title: 'A page',
+          url: 'https://example.com/',
+          fileName: 'a-page.png',
+          message: 'Exporting PNG…'
+        }
       });
       await expect(fakeBrowser.storage.local.get('capture-progress')).resolves.toEqual({});
     });
@@ -97,7 +118,6 @@ describe('storage', () => {
 
     it('defaults the ephemeral items to empty rather than undefined', async () => {
       await expect(lastMarkdown.getValue()).resolves.toBe('');
-      await expect(lastRunAt.getValue()).resolves.toBeNull();
     });
 
   });

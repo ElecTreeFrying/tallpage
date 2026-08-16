@@ -22,11 +22,10 @@ describe('registerHandlers', () => {
 
   it('routes a message to its handler and returns the reply', async () => {
     registerHandlers({
-      ping: () => ({ pong: true, at: 1 }),
       capture: () => ({ ok: true })
     });
 
-    await expect(sendMessage({ type: 'ping' })).resolves.toEqual({ pong: true, at: 1 });
+    await expect(sendMessage({ type: 'capture', format: 'png' })).resolves.toEqual({ ok: true });
   });
 
   it('waits for an asynchronous handler and replies with what it resolved to', async () => {
@@ -34,7 +33,6 @@ describe('registerHandlers', () => {
     // debugger and paints a whole page. The listener must return a literal
     // `true` while that promise settles, or the reply channel closes early.
     registerHandlers({
-      ping: () => ({ pong: true, at: 1 }),
       capture: async () => {
         await Promise.resolve();
 
@@ -53,7 +51,6 @@ describe('registerHandlers', () => {
     const formats: ExportFormat[] = [];
 
     registerHandlers({
-      ping: () => ({ pong: true, at: 1 }),
       capture: (message) => {
         formats.push(message.format);
 
@@ -71,7 +68,6 @@ describe('registerHandlers', () => {
     // The popup closes on click, so a rejected promise would have nowhere to
     // land. A failure has to arrive as a value.
     registerHandlers({
-      ping: () => ({ pong: true, at: 1 }),
       capture: () => ({ ok: false, error: 'Browser pages cannot be captured' })
     });
 
@@ -83,7 +79,6 @@ describe('registerHandlers', () => {
 
   it('reports a short capture without calling it a failure', async () => {
     registerHandlers({
-      ping: () => ({ pong: true, at: 1 }),
       capture: () => ({ ok: true, captured: 32_767, requested: 51_200 })
     });
 
@@ -97,7 +92,6 @@ describe('registerHandlers', () => {
     const capture = vi.fn(() => ({ ok: true }));
 
     registerHandlers({
-      ping: () => ({ pong: true, at: 1 }),
       capture
     });
 
@@ -110,7 +104,6 @@ describe('registerHandlers', () => {
     const capture = vi.fn(() => ({ ok: true }));
 
     registerHandlers({
-      ping: () => ({ pong: true, at: 1 }),
       capture
     });
 

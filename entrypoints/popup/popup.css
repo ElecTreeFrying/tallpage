@@ -160,6 +160,7 @@ h1 {
 .footer {
   display: flex;
   justify-content: flex-end;
+  gap: 4px;
   padding-block-start: 10px;
   border-block-start: 1px solid var(--tp-border, #e4e4dd);
   animation: tp-fade var(--tp-settle, 260ms) var(--tp-ease, ease) both;

@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
-import { settings as settingsItem } from '@/storage';
+import { browser } from '#imports';
+import { captureProgress as captureProgressItem } from '@/storage';
 import { storageSignal } from '@/storage-signal';
 import { imports, viewProviders } from './config';
 
@@ -21,6 +22,10 @@ import { imports, viewProviders } from './config';
 })
 export class Sidepanel {
 
-  protected readonly settings = storageSignal(settingsItem);
+  protected readonly progress = storageSignal(captureProgressItem);
+
+  protected openOptions(): void {
+    void browser.runtime.openOptionsPage();
+  }
 
 }

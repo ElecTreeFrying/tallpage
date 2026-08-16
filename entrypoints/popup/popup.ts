@@ -17,6 +17,8 @@ interface PageInfo {
 
   url: string;
 
+  windowId: number;
+
 }
 
 /**
@@ -42,7 +44,9 @@ export class Popup implements OnInit {
 
   private readonly progress = storageSignal(captureProgressItem);
 
-  protected readonly busy = signal(false);
+  private readonly submitting = signal(false);
+
+  protected readonly busy = computed(() => this.submitting() || this.progress()?.state === 'running');
 
   protected readonly outcome = signal('');
 
@@ -52,7 +56,7 @@ export class Popup implements OnInit {
 
   protected readonly status = computed(() => {
     const current = this.progress();
-    if (current?.running) return `Capturing… ${Math.round(current.fraction * 100)}%`;
+    if (current?.state === 'running') return current.message;
 
     return this.outcome();
   });
@@ -75,7 +79,8 @@ export class Popup implements OnInit {
           ? ''
           : 'Browser and extension pages cannot be exported. Switch to a regular webpage and reopen Tallpage.',
         title: tab.title?.trim() || 'Untitled page',
-        url
+        url,
+        windowId: tab.windowId
       });
     } catch {
       // The action can open on a browser-owned page whose details are withheld;
@@ -84,13 +89,14 @@ export class Popup implements OnInit {
         capturable: false,
         problem: 'Tallpage cannot read this page. Switch to a regular webpage and reopen Tallpage.',
         title: 'Page unavailable',
-        url: ''
+        url: '',
+        windowId: -1
       });
     }
   }
 
   protected async download(format: ExportFormat): Promise<void> {
-    this.busy.set(true);
+    this.submitting.set(true);
     this.outcome.set('');
 
     // `sendMessage` rejects outright when no receiver answers — the worker
@@ -101,13 +107,13 @@ export class Popup implements OnInit {
     try {
       reply = await sendMessage({ type: 'capture', format });
     } catch (error: unknown) {
-      this.busy.set(false);
+      this.submitting.set(false);
       this.outcome.set(error instanceof Error ? error.message : 'The extension did not respond.');
 
       return;
     }
 
-    this.busy.set(false);
+    this.submitting.set(false);
 
     if (!reply.ok) {
       this.outcome.set(reply.error ?? 'Capture failed.');
@@ -130,6 +136,21 @@ export class Popup implements OnInit {
 
   protected openOptions(): void {
     void browser.runtime.openOptionsPage();
+  }
+
+  protected openSidepanel(): void {
+    const windowId = this.page()?.windowId;
+    if (windowId == null || windowId < 0) {
+      this.outcome.set('Tallpage could not open the progress panel for this window.');
+
+      return;
+    }
+
+    // Chrome requires the call to remain inside the click's user gesture. Do
+    // not insert an await before `open()` or route this through the worker.
+    void browser.sidePanel.open({ windowId }).catch((error: unknown) => {
+      this.outcome.set(error instanceof Error ? error.message : 'The progress panel did not open.');
+    });
   }
 
 }

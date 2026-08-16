@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, type OnInit } from '@angular/core';
 import { DEFAULT_SETTINGS, settings as settingsItem } from '@/storage';
 import { storageSignal } from '@/storage-signal';
 import { imports, viewProviders } from './config';
@@ -17,14 +17,12 @@ import { imports, viewProviders } from './config';
   host: { class: 'c-options' },
   imports, viewProviders
 })
-export class Options {
+export class Options implements OnInit {
 
   protected readonly settings = storageSignal(settingsItem);
 
-  protected async onToggle(event: Event): Promise<void> {
-    const enabled = (event.target as HTMLInputElement).checked;
-
-    await settingsItem.setValue({ ...(this.settings() ?? DEFAULT_SETTINGS), enabled });
+  ngOnInit(): void {
+    void settingsItem.migrate();
   }
 
   protected async onOpenAfterDownloadChange(event: Event): Promise<void> {

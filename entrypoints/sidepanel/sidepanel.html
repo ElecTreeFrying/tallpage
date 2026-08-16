@@ -1,13 +1,57 @@
 <h1>Tallpage</h1>
-<p class="u-hint">Side panel — replace this with your UI.</p>
+<p class="u-hint">Export activity stays visible after the popup closes.</p>
 
-<div class="u-row">
-  @if (settings(); as current) {
-    <span>
-      Enabled:
-      <code>{{ current.enabled }}</code>
-    </span>
+<section class="activity" aria-live="polite" aria-label="Export activity">
+  @if (progress(); as current) {
+    @switch (current.state) {
+      @case ('running') {
+        <span class="eyebrow">
+          Exporting {{ current.format?.toUpperCase() }}
+        </span>
+        <strong>{{ current.title || 'Current page' }}</strong>
+        <p>{{ current.message }}</p>
+        <div class="bar" aria-hidden="true"><span></span></div>
+      }
+      @case ('saved') {
+        <span class="eyebrow success">
+          Last {{ current.format?.toUpperCase() }} export saved
+        </span>
+        <strong>{{ current.title || current.fileName }}</strong>
+        <p>{{ current.fileName }}</p>
+      }
+      @case ('failed') {
+        <span class="eyebrow failure">
+          {{ current.format?.toUpperCase() || 'Last' }} export failed
+        </span>
+        <strong>{{ current.title || 'Export' }}</strong>
+        <p>{{ current.message }}</p>
+      }
+      @default {
+        <span class="eyebrow">Ready</span>
+        <strong>No export this browser session</strong>
+        <p>Open Tallpage from the toolbar and choose a format.</p>
+      }
+    }
+
+    @if (current.url) {
+      <a
+        [href]="current.url"
+        target="_blank"
+        rel="noopener"
+        [title]="current.url">
+        {{ current.url }}
+      </a>
+    }
   } @else {
-    <span class="u-hint">Reading settings…</span>
+    <span class="u-hint">Reading export activity…</span>
   }
+</section>
+
+<p class="privacy">
+  Page content is processed locally. Tallpage has no analytics, ads, or
+  developer server.
+</p>
+
+<div class="footer">
+  <button type="button" (click)="openOptions()">Options</button>
 </div>

@@ -22,24 +22,18 @@ import { storage } from '#imports';
  * What a capture is written out as.
  *
  * PNG and PDF are the same pixels — PDF wraps the raster. HTML is a different
- * artefact entirely: the live DOM saved as one self-contained document, with
- * text that is still text.
+ * artefact entirely: the live DOM saved as an offline snapshot, with text that
+ * is still text.
  */
 export type ExportFormat = 'png' | 'pdf' | 'html' | 'md';
 
 export interface Settings {
-
-  enabled: boolean;
-
-  format: ExportFormat;
 
   openAfterDownload: boolean;
 
 }
 
 export const DEFAULT_SETTINGS: Settings = {
-  enabled: true,
-  format: 'png',
   openAfterDownload: true
 };
 
@@ -50,29 +44,34 @@ export const DEFAULT_SETTINGS: Settings = {
  */
 export const settings = storage.defineItem<Settings>('local:settings', {
   fallback: DEFAULT_SETTINGS,
-  version: 3,
+  version: 4,
   migrations: {
-    2: (previous: Partial<Settings>): Settings => ({ ...DEFAULT_SETTINGS, ...previous }),
-    3: (previous: Partial<Settings>): Settings => ({ ...DEFAULT_SETTINGS, ...previous })
+    4: (previous: Partial<Settings>): Settings => ({
+      openAfterDownload: previous.openAfterDownload ?? DEFAULT_SETTINGS.openAfterDownload
+    })
   }
 });
 
-/** Ephemeral by design — the right home for anything that must not outlive the browser session. */
-export const lastRunAt = storage.defineItem<number | null>('session:last-run-at', {
-  fallback: null
-});
+export type CaptureState = 'idle' | 'running' | 'saved' | 'failed';
 
 export interface CaptureProgress {
 
-  running: boolean;
+  state: CaptureState;
 
-  /** 0–1. Meaningless while `running` is false. */
-  fraction: number;
+  format: ExportFormat | null;
+
+  title: string;
+
+  url: string;
+
+  fileName: string;
+
+  message: string;
 
 }
 
 /**
- * How far the current capture has got.
+ * The current capture or most recent result in this browser session.
  *
  * Session-scoped rather than local because a half-finished run is worthless
  * after a browser restart. It lives in storage at all — rather than a variable
@@ -80,7 +79,14 @@ export interface CaptureProgress {
  * mid-run has nowhere else to read from (§E1).
  */
 export const captureProgress = storage.defineItem<CaptureProgress>('session:capture-progress', {
-  fallback: { running: false, fraction: 0 }
+  fallback: {
+    state: 'idle',
+    format: null,
+    title: '',
+    url: '',
+    fileName: '',
+    message: ''
+  }
 });
 
 /**

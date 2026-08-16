@@ -5,7 +5,7 @@ import { withDebugger } from '@/debugger-session';
 import { captureMarkdown } from '@/markdown';
 import { registerHandlers } from '@/messaging';
 import { imageToPdf } from '@/pdf';
-import { captureProgress, lastMarkdown, lastRunAt, settings as settingsItem, type ExportFormat } from '@/storage';
+import { captureProgress, lastMarkdown, settings as settingsItem, type CaptureProgress, type ExportFormat } from '@/storage';
 
 /**
  * The MV3 service worker. Read this before adding anything to it.
@@ -30,22 +30,17 @@ import { captureProgress, lastMarkdown, lastRunAt, settings as settingsItem, typ
  */
 export default defineBackground(() => {
   registerHandlers({
-    ping: async () => {
-      const at = Date.now();
-
-      await lastRunAt.setValue(at);
-
-      return { pong: true, at };
-    },
-
     capture: async (message) => {
       try {
         return await runCapture(message.format);
       } catch (error: unknown) {
-        await finishBadge('!');
-        await captureProgress.setValue({ running: false, fraction: 0 });
+        const message = error instanceof Error ? error.message : String(error);
+        const current = await captureProgress.getValue();
 
-        return { ok: false, error: error instanceof Error ? error.message : String(error) };
+        await finishBadge('!');
+        await captureProgress.setValue(failedProgress(current, message));
+
+        return { ok: false, error: message };
       }
     }
   });
@@ -59,6 +54,7 @@ async function runCapture(format: ExportFormat) {
   const [ tab ] = await browser.tabs.query({ active: true, currentWindow: true });
   if (tab?.id == null || tab.windowId == null) throw new Error('No active tab');
 
+  await settingsItem.migrate();
   const currentSettings = await settingsItem.getValue();
 
   // Refusing browser and extension pages is not tidiness — the Markdown viewer
@@ -69,8 +65,18 @@ async function runCapture(format: ExportFormat) {
   }
 
   const tabId = tab.id;
+  const title = tab.title?.trim() || 'Untitled page';
+  const url = tab.url ?? '';
+  const fileName = fileNameFor(tab.title, format);
 
-  await captureProgress.setValue({ running: true, fraction: 0 });
+  await captureProgress.setValue({
+    state: 'running',
+    format,
+    title,
+    url,
+    fileName,
+    message: `Exporting ${format.toUpperCase()}…`
+  });
   await browser.action.setBadgeText({ text: '…' });
 
   // One attached session covers whichever export was asked for — the screenshot
@@ -99,11 +105,18 @@ async function runCapture(format: ExportFormat) {
 
   const downloadId = await browser.downloads.download({
     url: await toDataUrl(blob),
-    filename: fileNameFor(tab.title, format),
+    filename: fileName,
     saveAs: false
   });
 
-  await captureProgress.setValue({ running: false, fraction: 1 });
+  await captureProgress.setValue({
+    state: 'saved',
+    format,
+    title,
+    url,
+    fileName,
+    message: `Saved ${fileName}`
+  });
   await finishBadge('');
 
   if (!currentSettings.openAfterDownload) {
@@ -118,12 +131,30 @@ async function runCapture(format: ExportFormat) {
   // rather than looped — it is a `chrome-extension:` page, which
   // `UNCAPTURABLE` rejects.
   if (format === 'md') {
-    await browser.tabs.create({ url: browser.runtime.getURL('/viewer.html') });
+    try {
+      await browser.tabs.create({ url: browser.runtime.getURL('/viewer.html') });
+    } catch {
+      // The download is complete. A window closing before the optional viewer
+      // opens does not turn a saved file into a failed export.
+    }
   } else {
     await openWhenComplete(downloadId);
   }
 
   return { ok: true, captured: height, requested: height };
+}
+
+function failedProgress(current: CaptureProgress, message: string): CaptureProgress {
+  if (current.state === 'running') return { ...current, state: 'failed', message };
+
+  return {
+    state: 'failed',
+    format: null,
+    title: '',
+    url: '',
+    fileName: '',
+    message
+  };
 }
 
 /**

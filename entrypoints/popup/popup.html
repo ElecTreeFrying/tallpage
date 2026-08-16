@@ -1,5 +1,8 @@
 <h1>Tallpage</h1>
-<p class="u-hint">Downloads this page, top to bottom.</p>
+<p class="u-hint">
+  Reads this page's title, URL, pixels, or content only after you choose a
+  format. Processing stays on your device.
+</p>
 
 @if (page(); as currentPage) {
   <section class="page" aria-label="Page to export">
@@ -43,11 +46,11 @@
   </button>
   <button
     type="button"
-    aria-label="Download full page as HTML. Self-contained offline snapshot."
+    aria-label="Download full page as HTML. Offline DOM snapshot."
     [disabled]="busy() || !canDownload()"
     (click)="download('html')">
     <strong class="action-format">HTML</strong>
-    <span class="action-description">Self-contained offline snapshot</span>
+    <span class="action-description">Offline DOM snapshot</span>
   </button>
   <button
     type="button"
@@ -68,5 +71,8 @@
 }
 
 <div class="footer">
+  <button type="button" class="quiet" (click)="openSidepanel()">
+    Progress panel
+  </button>
   <button type="button" class="quiet" (click)="openOptions()">Options</button>
 </div>
