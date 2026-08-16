@@ -143,7 +143,6 @@ background script stays plain TypeScript, enforced by `transformFilter` in `wxt.
 
 ## Publishing
 
-[`docs/publishing.md`](docs/publishing.md) is the release specification: final store copy,
-permission justifications, privacy questionnaire answers, reviewer steps, legal gate, asset
-requirements, and owner-controlled submission checklist. [`PRIVACY.md`](PRIVACY.md) is the
-policy to host at the public HTTPS URL entered in the Chrome Web Store dashboard.
+[`PRIVACY.md`](PRIVACY.md) is the policy hosted at the public HTTPS URL entered in the Chrome
+Web Store dashboard. Store copy, reviewer instructions, and the owner-controlled submission
+checklist are maintainer-only working notes and are intentionally excluded from this repository.

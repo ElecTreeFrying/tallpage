@@ -24,6 +24,9 @@ web-ext.config.ts
 CLAUDE.md
 tallpage-context.md
 
+# Maintainer-only release notes and backlog — kept locally, never published.
+docs/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
