@@ -1,0 +1,65 @@
+Save any webpage top to bottom — the whole document, not just the visible screen — as a PNG, PDF, HTML, or Markdown file.
+
+Chrome's built-in capture only sees the current viewport, and print-to-PDF reflows the page into something that no longer looks like what you were reading. Tallpage captures the page as it looks.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⚡ ONE RENDER, NOT A STITCHED IMAGE
+
+Most full-page screenshot tools scroll down the page and glue the frames together — which is why sticky headers repeat down the image, floating banners appear a dozen times, and lazy-loaded pictures come out blank. Tallpage resizes the page to its full height and asks Chrome's renderer to paint it once. There is nothing to stitch and nothing to guess at.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📦 CHOOSE THE FILE YOU NEED
+
+🖼 PNG — a full-page image, Chrome's own bytes, never re-encoded.
+
+📄 PDF — the same visual capture in a single-page PDF.
+
+🌐 HTML — the page's current DOM saved as one portable file, with styles, images, and CSS assets embedded where access and size limits permit.
+
+📝 Markdown — the readable content: headings, links, images, lists, quotes, code, and tables, with the site's visual styling dropped.
+
+The same page in four forms. PNG and PDF are what the page looks like. HTML is what the page is — text stays text, links stay links. Markdown is what the page says.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⬇️ AFTER THE EXPORT
+
+Every export is downloaded. By default Tallpage also opens the finished file in a focused new tab; Options can switch that off for download-only exports. Progress and the latest result stay in the side panel after the popup closes.
+
+📋 After a PNG completes, the popup offers Copy latest PNG path and the side panel offers Copy PNG file path — paste either result straight into a local tool such as Codex or Claude Code. Browser chats still need the actual PNG uploaded or pasted.
+
+✅ No account, no sign-in, no upload.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔒 PRIVACY AND DATA USE
+
+When you open Tallpage it reads the selected page's title and URL to identify the page and name the file. Only after you choose a format does it process what that export needs — which, depending on the format, can include the page's pixels, text, DOM, styles, images, and resource URLs.
+
+Processing happens on your device, solely to create the file you asked for. No page data is sent to Tallpage, its developer, or any developer-controlled service. There is no analytics, advertising, tracking, or remotely hosted code.
+
+Export status and the latest Markdown preview live in Chrome session storage, which Chrome clears when the browser closes. A completed PNG's absolute local path can include the operating-system account or folder name; Tallpage resolves it only while the popup or side panel is open, holds it only in that surface's memory, and copies it only after you press a path-copy button. The path is never written to extension storage or sent anywhere. The only thing kept in local storage is your open-after-download preference. Tallpage requests no persistent host permissions.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⚠️ WHY CHROME SHOWS A BROAD ACCESS WARNING
+
+Capturing a full page requires Chrome's debugger interface — there is no other API that can render a whole document at once. Tallpage attaches it to the tab you selected, runs the export, and detaches when it finishes or fails. Chrome shows its standard debugging notification while that is happening.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📌 LIMITS WORTH KNOWING
+
+▸ Chrome system pages, extension pages, DevTools, and other protected browser URLs cannot be exported.
+
+▸ Elements pinned to the screen — some floating chat buttons and cookie bars — appear once, at the position they start in.
+
+▸ Very tall or wide PNG and PDF exports are captured at lower pixel density so the complete page is preserved rather than cropped.
+
+▸ PDF is a visual snapshot; its text is not selectable.
+
+▸ HTML is a static snapshot, not a working copy of a web app. Scripts and embedded frames are removed. Cross-origin or oversized resources may stay linked to their original URLs and need network access when the file is opened.
+
+▸ Opening downloaded PNG, PDF, or HTML files in a new tab requires "Allow access to file URLs" in Chrome. The download itself succeeds without it.
