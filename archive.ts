@@ -1,18 +1,21 @@
 import { browser } from '#imports';
 
 /**
- * The page as one self-contained HTML file.
+ * The page as one offline HTML snapshot.
  *
  * A screenshot is pixels; this is the document. Stylesheets, images and CSS
- * assets are pulled in and rewritten as `data:` URIs so the saved file opens
- * with no network at all — the equivalent of "Web Page, Single File", produced
- * from the DOM as it currently stands rather than from the original response.
+ * assets are pulled in and rewritten as `data:` URIs when the page allows it.
+ * A resource that is cross-origin without CORS or too large keeps its absolute
+ * URL, so the archive remains useful without pretending every site can be made
+ * completely standalone from page context.
  * That difference matters on anything client-rendered: the served HTML is a
  * shell, and the DOM is the page.
  *
- * **Scripts are stripped on purpose.** An archive that re-runs its own
- * JavaScript is not an archive — it re-fetches, re-renders, and usually erases
- * the state that was worth saving. The file is a snapshot, so it is inert.
+ * **Scripts and automatic navigation are stripped on purpose.** An archive that
+ * re-runs its own JavaScript is not an archive — it re-fetches, re-renders, and
+ * usually erases the state that was worth saving. Links remain links, and a
+ * resource that could not be embedded may still reach its original host when
+ * the file opens.
  *
  * The serializer below runs inside the page through `Runtime.evaluate`, so it
  * is stringified and re-parsed there and must close over nothing from this
@@ -43,7 +46,7 @@ async function serializeDocument(maxBytes: number): Promise<string> {
     if (!url || url.startsWith('data:') || url.startsWith('blob:')) return null;
 
     try {
-      const response = await fetch(url, { credentials: 'include' });
+      const response = await fetch(url, { credentials: 'same-origin' });
       if (!response.ok) return null;
 
       const blob = await response.blob();
@@ -96,6 +99,31 @@ async function serializeDocument(maxBytes: number): Promise<string> {
   const clone = document.documentElement.cloneNode(true) as HTMLElement;
 
   for (const script of Array.from(clone.querySelectorAll('script'))) script.remove();
+  for (const frame of Array.from(clone.querySelectorAll('iframe, frame, object, embed'))) frame.remove();
+
+  for (const meta of Array.from(clone.querySelectorAll<HTMLMetaElement>('meta[http-equiv]'))) {
+    const directive = (meta.getAttribute('http-equiv') ?? '').toLowerCase();
+    if (directive === 'content-security-policy' || directive === 'refresh') meta.remove();
+  }
+
+  for (const element of Array.from(clone.querySelectorAll<HTMLElement>('*'))) {
+    for (const attribute of Array.from(element.attributes)) {
+      const name = attribute.name.toLowerCase();
+      const value = attribute.value.trim();
+
+      if (name.startsWith('on')) element.removeAttribute(attribute.name);
+      if (name === 'autoplay' || name === 'formaction' || name === 'ping') element.removeAttribute(attribute.name);
+      if ([ 'href', 'src', 'action', 'formaction', 'xlink:href' ].includes(name) && /^javascript:/i.test(value)) {
+        element.removeAttribute(attribute.name);
+      }
+    }
+  }
+
+  for (const form of Array.from(clone.querySelectorAll('form'))) {
+    form.setAttribute('action', 'about:blank');
+    form.setAttribute('method', 'get');
+    form.removeAttribute('target');
+  }
 
   // `<link rel="preload">`, `<link rel="modulepreload">` and friends only point
   // at things the archive no longer needs, and a dead preload logs an error on
@@ -147,7 +175,7 @@ async function serializeDocument(maxBytes: number): Promise<string> {
   // the browser re-choose a candidate that is no longer inlined.
   for (const source of Array.from(clone.querySelectorAll('picture source'))) source.remove();
 
-  // Last resort for anything still relative — a link, a form action, an
+  // Last resort for anything still relative — a link, a media source, an
   // attribute nobody thought to rewrite.
   const head = clone.querySelector('head');
   if (head) {
