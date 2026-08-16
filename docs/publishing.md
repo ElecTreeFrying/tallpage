@@ -15,6 +15,8 @@ owner-controlled.
 | Price          | Free                                                                                    |
 | Category       | Productivity                                                                            |
 | Language       | English                                                                                 |
+| Publisher      | `WinterNova5`                                                                           |
+| EEA status     | Non-trader — reassess before any commercial or professional use                         |
 | Single purpose | Export the user-selected current webpage, top to bottom, as PNG, PDF, HTML, or Markdown |
 
 ## Legal gate before going operational
@@ -46,7 +48,7 @@ Tallpage exports the webpage you choose from top to bottom in one click.
 
 - PNG — a lossless visual capture from Chrome's renderer.
 - PDF — the same full-page visual in a single-page PDF.
-- HTML — an offline snapshot of the current DOM with accessible resources embedded.
+- HTML — a current-DOM snapshot with accessible resources embedded when the page allows.
 - Markdown — readable page content without navigation or visual chrome.
 
 Tallpage reads the selected page's title, URL, pixels, or content only after you choose an
@@ -138,22 +140,22 @@ for the isolated-profile smoke test and screenshot sequence.
 
 ## Owner-controlled submission checklist
 
-- Clear the legal gate above.
-- Finish Chrome Web Store developer registration, its one-time fee, and Google Account
-  two-step verification.
-- Complete the required trader/non-trader declaration. The publisher must make its own legal
-  classification; verified trader name, phone number, and address are displayed publicly, so
-  settle the classification and public contact details before entering them.
-- Choose the public developer display name and support email.
-- Confirm the repository privacy-policy URL above is public after the release change reaches
-  `main`, then enter that exact URL in the dashboard.
-- Have the public policy/contact presentation checked for any additional German or EU privacy
-  and imprint requirements; the repository policy is drafted for Chrome Web Store fields, not
-  as jurisdiction-specific legal advice.
-- Upload the ZIP and listing assets, paste the copy and justifications above, and complete
-  the privacy questionnaire.
-- Review the permission warning and draft listing without publishing.
-- Submit for review only after a final smoke test of the exact uploaded ZIP.
+- [ ] Clear the legal gate above.
+- [x] Finish Chrome Web Store developer registration, its one-time fee, and Google Account
+      two-step verification.
+- [x] Complete the required trader/non-trader declaration. The current declaration is
+      non-trader for a free, noncommercial release; reassess it before any monetization or other
+      professional use.
+- [x] Choose the public developer display name and verify the support email.
+- [ ] Confirm the repository privacy-policy URL above is public after the release change reaches
+      `main`, then enter that exact URL in the dashboard.
+- [ ] Have the public policy/contact presentation checked for any additional German or EU privacy
+      and imprint requirements; the repository policy is drafted for Chrome Web Store fields, not
+      as jurisdiction-specific legal advice.
+- [ ] Upload the ZIP and listing assets, paste the copy and justifications above, and complete
+      the privacy questionnaire.
+- [ ] Review the permission warning and draft listing without publishing.
+- [ ] Submit for review only after a final smoke test of the exact uploaded ZIP.
 
 ## Live policy sources
 
