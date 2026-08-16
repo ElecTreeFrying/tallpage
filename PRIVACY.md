@@ -1,6 +1,6 @@
 # Tallpage Privacy Policy
 
-Effective 16 August 2026.
+Effective 17 August 2026.
 
 Tallpage exports the webpage the user chooses as PNG, PDF, HTML, or Markdown. The
 extension processes the selected page on the user's device. Tallpage has no developer
