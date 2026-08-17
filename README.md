@@ -5,7 +5,7 @@
 <div align="center"><strong>Save any webpage, top to bottom, as an image, a PDF, an offline copy, or plain text.</strong></div>
 
 <div align="center">
-  <a href="https://chromewebstore.google.com/detail/tallpage/EXTENSION_ID"><img src="https://img.shields.io/badge/Add%20to%20Chrome-4D6B10?style=for-the-badge&logo=googlechrome&logoColor=white" alt="Add to Chrome"></a>
+  <a href="https://chromewebstore.google.com/detail/tallpage/abgocdacacoomfalabibpmokidccfjej"><img src="https://img.shields.io/badge/Add%20to%20Chrome-4D6B10?style=for-the-badge&logo=googlechrome&logoColor=white" alt="Add to Chrome"></a>
   <a href="https://www.youtube.com/watch?v=Bixfo2iODDY"><img src="https://img.shields.io/badge/Watch%20the%20demo-101828?style=for-the-badge&logo=youtube&logoColor=C9F24D" alt="Watch the demo"></a>
 </div>
 
@@ -42,7 +42,7 @@ Four buttons, four kinds of file. Pick whichever suits what you're doing.
 
 **Markdown** — just the words. Headings, paragraphs, lists, links, tables — with the navigation, ads, and styling stripped away.
 
-The first two are what the page *looks* like. HTML is what the page *is*. Markdown is what the page *says*. They're different things, not four versions of the same file.
+The first two are what the page _looks_ like. HTML is what the page _is_. Markdown is what the page _says_. They're different things, not four versions of the same file.
 
 ## What people use it for
 
@@ -62,7 +62,7 @@ The first two are what the page *looks* like. HTML is what the page *is*. Markdo
 
 ## Install
 
-**[Get Tallpage on the Chrome Web Store →](https://chromewebstore.google.com/detail/tallpage/EXTENSION_ID)**
+**[Get Tallpage on the Chrome Web Store →](https://chromewebstore.google.com/detail/tallpage/abgocdacacoomfalabibpmokidccfjej)**
 
 Click **Add to Chrome**, confirm the permission prompt, and Tallpage appears in your toolbar. Nothing else to set up — no account, no sign-in, no configuration.
 
